@@ -80,10 +80,28 @@ watch(model, (value) => {
   }
 })
 
-function imageFilesFrom(list: FileList | null | undefined): File[] {
-  return Array.from(list ?? []).filter((file) =>
-    file.type.startsWith('image/'),
+const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif|svg|bmp|heic|heif)$/i
+
+/**
+ * Windows hands back an empty `type` for several image formats, so a strict
+ * MIME check silently discards perfectly good files. Fall back to the
+ * extension when the browser has no opinion.
+ */
+function isImage(file: File): boolean {
+  return (
+    file.type.startsWith('image/') ||
+    (file.type === '' && IMAGE_EXTENSION.test(file.name))
   )
+}
+
+function describe(files: File[]): string {
+  return files
+    .map((file) => `${file.name} (${file.type || 'unknown type'})`)
+    .join(', ')
+}
+
+function imageFilesFrom(list: FileList | null | undefined): File[] {
+  return Array.from(list ?? []).filter(isImage)
 }
 
 /**
@@ -101,7 +119,11 @@ async function insertImages(files: File[], at?: number, alt = '') {
     try {
       const src = await props.upload(file)
       const instance = editor.value
-      if (!instance) return
+
+      if (!instance) {
+        uploadError.value = 'The editor was not ready — please try again.'
+        return
+      }
 
       if (position === undefined) {
         instance.chain().focus().setImage({ src, alt }).run()
@@ -128,17 +150,27 @@ function pickImage() {
 
 async function onFilePicked(event: Event) {
   const input = event.target as HTMLInputElement
-  const files = imageFilesFrom(input.files)
+  const chosen = Array.from(input.files ?? [])
   input.value = '' // let the same file be chosen again after a failure
 
-  if (!files.length) return
+  // Cancelling the dialog is the one case where doing nothing is correct.
+  if (!chosen.length) return
+
+  const images = chosen.filter(isImage)
+
+  // Anything else must say so. A silent return here looks identical to the
+  // feature being broken.
+  if (!images.length) {
+    uploadError.value = `That doesn't look like an image file: ${describe(chosen)}`
+    return
+  }
 
   // Only the deliberate toolbar path asks for alt text; prompting on every
   // paste would be intolerable.
   const alt =
     window.prompt('Describe this image for screen readers (optional)') ?? ''
 
-  await insertImages(files, undefined, alt)
+  await insertImages(images, undefined, alt)
 }
 
 function toggleLink() {
