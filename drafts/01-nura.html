@@ -1,0 +1,55 @@
+<p>NURA scans your face with a webcam and scores six things about your skin, then builds a routine around whichever scores are weakest. The whole analysis runs in the browser. No frame is uploaded, no model is downloaded, and there is no server or database behind it.</p>
+
+<p>That constraint is the interesting part. It is also what made the first version wrong.</p>
+
+<h2>The goal</h2>
+
+<p>I wanted something that could look at a face and say something specific and useful about it, without the usual bargain where you hand over a photo of yourself to find out. If the analysis happens on the device, there is nothing to leak, nothing to store, and nothing to explain in a privacy policy.</p>
+
+<p>Six metrics: calmness, tone evenness, pore clarity, texture, hydration, and radiance. Then match a routine from a product catalogue to the lowest scores, always ending with SPF.</p>
+
+<h2>The decisions</h2>
+
+<p><strong>Everything client side, with no model download.</strong> The analysis in <code>src/lib/analyze.ts</code> is plain Canvas API work: pixel maths, colour space conversion, blurring. No TensorFlow.js, no ONNX runtime, no weights to fetch. That keeps the page fast and makes the privacy claim structurally true rather than a promise.</p>
+
+<p><strong>The platform face detector is optional, not required.</strong> The browser <code>FaceDetector</code> API is used when it exists, but it is missing from every mainstream browser, so it cannot be depended on. The fallback locates the face by skin chroma segmentation in YCbCr.</p>
+
+<p><strong>Five frames, then take the median.</strong> A single frame can catch a blink, a flicker from a screen, or a moment of bad exposure. Five frames and a median means one bad capture cannot swing a score.</p>
+
+<p><strong>Every reading carries a confidence value.</strong> A blown out, too dark, or face not found frame reports low confidence instead of being dressed up as a precise number.</p>
+
+<p><em>[Your turn: why skincare specifically? What made you want to build this one rather than something else?]</em></p>
+
+<h2>What went wrong</h2>
+
+<p>The first version measured the room.</p>
+
+<p>This is the trap in any webcam scoring project, and I walked straight into it. Raw brightness and raw colour tell you far more about the lamp above someone's head than about their skin. A warm bulb reads as redness. A window on one side reads as uneven tone. Sitting closer to a sharper camera reads as more texture. The numbers moved confidently, and they were describing lighting.</p>
+
+<p>The commit that fixed it is called <em>Rebuild skin analysis to measure skin instead of lighting</em>, which is about as blunt a summary as I could have written at the time.</p>
+
+<p><em>[Your turn: how did you notice? Was it scanning in a different room, or did a score look obviously wrong?]</em></p>
+
+<h2>The fix</h2>
+
+<p>Three changes, each attacking a different way lighting leaks into the result.</p>
+
+<ol>
+<li><strong>White balance the frame</strong> using shades of grey with Minkowski p=6, which neutralises the colour cast of the room before anything is measured.</li>
+<li><strong>Flat field the illumination.</strong> Divide the lightness channel by a heavily blurred copy of itself. A window gradient across the face is low frequency, so it divides out, while skin detail is high frequency and survives.</li>
+<li><strong>Score relatively, never absolutely.</strong> Redness on the cheeks and nose is measured against that same face's forehead and chin. T-zone shine is measured against the cheeks. Texture is expressed as a percentage of the local mean. A warm lamp raises every zone together, so it cancels.</li>
+</ol>
+
+<p>The resampling step matters for the same reason: the face is scaled to a fixed size before texture is read, so moving closer to the camera no longer counts as having rougher skin.</p>
+
+<h2>A decision I reversed</h2>
+
+<p>An earlier version had the product catalogue wired to Amazon affiliate links. A later commit strips them out entirely.</p>
+
+<p><em>[Your turn: this one is worth writing up properly. Why did you take the affiliate links out? It is the kind of decision most people would quietly leave in.]</em></p>
+
+<h2>Honest limits</h2>
+
+<p>This measures surface optics: redness, shine, detail energy, tone spread. It does not identify acne lesions, moles, or any medical condition, and it is not a substitute for a dermatologist. Scans are only really comparable to each other when taken in similar lighting, which is a smaller claim than the one the first version was accidentally making.</p>
+
+<p>Built with Vite, React and TypeScript, with Framer Motion for the scan animation and score ring. It is fully static and deploys anywhere.</p>

@@ -1,0 +1,66 @@
+<p>Norvik is at version 0.0.1, and version 0.0.1 means exactly one thing: the kernel boots under GRUB and writes text to the screen. Six files, about four kilobytes, no standard library, no operating system underneath it.</p>
+
+<p>The README describes a much larger ambition. This post is about the four kilobytes that actually exist, because the gap between the two is the honest part.</p>
+
+<h2>The goal</h2>
+
+<p>Get a machine to run code I wrote, with nothing in between. Not a program running on an OS, but the thing the bootloader hands control to. Everything after that (keyboard, memory management, a filesystem) depends on getting this first step right, and the first step is mostly about convincing a set of tools to stop being helpful.</p>
+
+<h2>The decisions</h2>
+
+<p><strong>Use GRUB and Multiboot instead of writing a bootloader.</strong> Writing a real bootloader means 16 bit real mode, BIOS interrupts, the 512 byte boot sector limit, and then switching the CPU to protected mode by hand. GRUB has done all of it. The price is a header GRUB looks for in the first 8KB of the binary:</p>
+
+<pre><code>.set MAGIC,    0x1BADB002
+.set FLAGS,    0
+.set CHECKSUM, -(MAGIC + FLAGS)</code></pre>
+
+<p>The magic number is fixed by the spec. The checksum exists so that the three fields sum to zero, which is how GRUB confirms it has found a real header rather than a coincidence. Flags is 0, meaning nothing extra is requested yet.</p>
+
+<p><strong>Build with an i686-elf cross compiler.</strong> The system compiler targets the host OS: it assumes libc exists, that there is a program loader, that <code>main</code> is called by something. A cross compiler targeting bare ELF assumes none of that. The flags finish the job:</p>
+
+<pre><code>CFLAGS = -ffreestanding -O2 -Wall
+# link: -nostdlib -lgcc</code></pre>
+
+<p><code>-ffreestanding</code> tells GCC there is no standard library and that it must not assume the usual meaning of functions. <code>-nostdlib</code> keeps the linker from pulling in a C runtime that would try to set up an environment that does not exist. <code>-lgcc</code> is added back deliberately, because GCC emits calls to its own helper routines for things like 64 bit division, and those still have to resolve.</p>
+
+<p><strong>Load at the one megabyte mark.</strong> The linker script starts the image at <code>0x100000</code>:</p>
+
+<pre><code>. = 0x100000;
+
+.text BLOCK(4K) : ALIGN(4K) {
+    *(.multiboot)
+    *(.text)
+}</code></pre>
+
+<p>Below 1MB is a museum of memory mapped hardware and BIOS structures. Above it is ordinary RAM. The <code>.multiboot</code> section is placed first inside <code>.text</code> on purpose, so the header lands where GRUB will look for it.</p>
+
+<p><strong>Write to VGA text memory directly.</strong> There is no screen driver and no console. There is a buffer at <code>0xB8000</code> where every character is two bytes: the ASCII code, then a colour attribute. <code>0x0F</code> is white on black. Writing a byte there puts a letter on the display.</p>
+
+<h2>What I found reading it back</h2>
+
+<p>These are things I can see in the code rather than problems I hit and solved, so they belong on a to do list rather than in a war story.</p>
+
+<p><strong>The screen output is wrong, and it is a one word bug.</strong> <code>print</code> declares its cursor inside the function:</p>
+
+<pre><code>void print(const char* str) {
+    int i = 0;
+    int pos = 0;      // resets on every call
+    ...
+}</code></pre>
+
+<p><code>kernel_main</code> calls it twice, so the second call starts writing at position zero again and paints over the first. <code>"Norvik 0.0.1"</code> is twelve characters and <code>" - Welcome."</code> is eleven, so what actually reaches the screen is <code>" - Welcome.1"</code>, with that trailing <code>1</code> being the only surviving character of the first string. The fix is to make the cursor outlive the call, either as a file scope variable or as <code>static int pos</code>.</p>
+
+<p><strong>No stack is set up before C code runs.</strong> <code>_start</code> calls straight into <code>kernel_main</code>:</p>
+
+<pre><code>_start:
+    call kernel_main</code></pre>
+
+<p>A <code>call</code> pushes a return address, and C needs a stack for locals. The Multiboot spec explicitly says the OS image must create its own stack, so relying on whatever value GRUB left in <code>esp</code> is undefined behaviour that happens to work. The standard fix is to reserve space in <code>.bss</code> and point <code>esp</code> at the top of it before calling anything.</p>
+
+<p><strong>The VGA pointer should be volatile.</strong> Nothing ever reads back from <code>0xB8000</code>, so those writes have no observable effect as far as the optimiser is concerned. GCC keeps them here in practice, but marking the pointer <code>volatile</code> is what actually guarantees it, and memory mapped hardware is the exact case the keyword exists for.</p>
+
+<h2>What comes next</h2>
+
+<p>Keyboard input is the next item on the roadmap, and it needs an interrupt descriptor table before it can work. Memory management after that will need real numbers about available RAM, which means setting bit 1 in the Multiboot flags so GRUB provides a memory map, rather than the current flags value of 0.</p>
+
+<p><em>[Your turn: what made you want to write an OS in the first place? And how long did the toolchain take before anything booted? That part is usually the real story with bare metal work.]</em></p>
