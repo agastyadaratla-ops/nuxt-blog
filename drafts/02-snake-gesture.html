@@ -1,14 +1,18 @@
-<p>Snake, except you steer it by holding up fingers to a webcam. One finger sends it up, two down, three right, four left. It runs entirely in a browser tab, in about 250 lines across three files.</p>
+<p>Snake, except you steer it by holding fingers up to a webcam. One finger sends it up, two down, three right, four left. It runs entirely in a browser tab, in about 250 lines across three files, with no build step.</p>
 
 <h2>The goal</h2>
 
-<p>Take a game everyone already understands and replace the input with something that is not a keyboard. Snake is a good target for this because the control surface is tiny: four directions, no timing, no analogue precision. If the gesture recognition is even roughly right, the game is playable.</p>
+<p>Replace the input on a game everyone already understands, and see how much of the difficulty lives in the recognition rather than the game.</p>
+
+<p>Snake is well chosen for this, and the reason is the size of its control surface. There are four directions. There is no timing, no analogue precision, no combinations, and no penalty for a slightly late input because the snake keeps moving anyway. A gesture system that is only roughly right still produces a playable game. Try the same thing on a platformer and every missed frame is a death.</p>
 
 <h2>The decisions</h2>
 
-<p><strong>MediaPipe Hands, loaded from a CDN.</strong> No build step, no bundler, no install. Three files and an <code>index.html</code> you can open. The model is configured for one hand, with detection and tracking confidence both at 0.6.</p>
+<p><strong>MediaPipe Hands, loaded straight from a CDN.</strong> No bundler, no install, no package.json. Three files and an <code>index.html</code> you can double click. For a project whose entire purpose is to see whether an idea is fun, spending the first evening on a build pipeline is the wrong order of operations.</p>
 
-<p><strong>Count fingers geometrically rather than classifying gestures.</strong> MediaPipe returns 21 landmarks per hand. Rather than training or importing a gesture classifier, the code compares each fingertip against the joint two positions below it:</p>
+<p>The model runs with one hand, and detection and tracking confidence both at 0.6. One hand because the game only needs one number, and a second hand entering the frame is far more likely to be noise than intent.</p>
+
+<p><strong>Count fingers geometrically instead of classifying gestures.</strong> MediaPipe hands back 21 landmarks per hand. The obvious move is to feed those landmarks to a classifier. I did not, because the thing I needed to know is much smaller than what a classifier answers.</p>
 
 <pre><code>const fingerTips = [8, 12, 16, 20];
 const fingerPips = [6, 10, 14, 18];
@@ -17,37 +21,40 @@ for (let i = 0; i &lt; fingerTips.length; i++) {
   if (landmarks[fingerTips[i]].y &lt; landmarks[fingerPips[i]].y) raised++;
 }</code></pre>
 
-<p>If a fingertip sits higher on the screen than its own knuckle, that finger is up. Four comparisons, no model, no training data. The thumb is deliberately ignored, which sidesteps the hardest finger to read this way.</p>
+<p>If a fingertip sits higher on the screen than its own middle knuckle, that finger is up. Four comparisons. No training data, no second model, no inference cost beyond what MediaPipe has already spent, and nothing to debug except an inequality.</p>
 
-<p><strong>Guard against reversing into yourself.</strong> Each direction change is conditional on the current axis:</p>
+<p>The thumb is deliberately left out. A thumb does not fold along the same axis as the other four, so the tip above knuckle test does not describe it, and including it would have meant special casing the one finger that behaves differently in order to gain a fifth gesture the game has no use for.</p>
+
+<p><strong>Guard direction changes on the current axis.</strong> Each mapping carries a condition:</p>
 
 <pre><code>if (raised === 1 &amp;&amp; direction.y === 0) direction = { x: 0, y: -1 };</code></pre>
 
-<p>A snake travelling vertically cannot accept another vertical instruction, so it can never fold back into its own neck. Two lines of state, no separate input queue.</p>
+<p>A snake already travelling vertically will not accept another vertical instruction. That single clause is what stops it folding back into its own neck, which in a keyboard version is the classic way to lose to your own hand rather than to the game. It needs no input queue and no extra state, because the current direction already holds all the information required.</p>
 
-<h2>What is actually going on underneath</h2>
+<h2>Two loops, running at different speeds</h2>
 
-<p>There are two loops running at very different speeds, and they are not synchronised.</p>
+<p>The most interesting property of this project was not designed. It fell out of using two independent timers.</p>
 
-<p>MediaPipe fires <code>onResults</code> on every camera frame, roughly 30 times a second. The game ticks on a <code>setInterval</code> every 200 milliseconds, so 5 times a second. That means the direction can be rewritten five or six times between one snake movement and the next, and only the last write before a tick has any effect.</p>
+<p>MediaPipe fires <code>onResults</code> on every camera frame, roughly thirty times a second. The game ticks on a <code>setInterval</code> every 200 milliseconds, so five times a second. Nothing synchronises them.</p>
 
-<p>In practice this feels fine, and it is the reason the game is forgiving: you have a sixth of a second of wobble while changing your hand shape, and only where your fingers land at the end of it counts. It was not designed that way so much as it fell out of using two independent timers.</p>
+<p>The consequence is that the direction variable can be rewritten five or six times between one movement of the snake and the next, and only the last write before a tick has any effect on the game. Every intermediate value is silently discarded.</p>
 
-<h2>Known limits, honestly</h2>
+<p>That turns out to be why the controls feel forgiving. Changing your hand from one finger to three passes through two on the way, and your fingers do not all arrive at once. All of that mess happens inside a single tick and is thrown away. You get roughly a fifth of a second of wobble, and only where your hand settles counts.</p>
 
-<p>These are things I can see in the code rather than problems I chased down, so I am listing them as limits rather than as a debugging story.</p>
+<p>If the game ran its logic on every camera frame instead, the same hand movement would send the snake through two or three unwanted turns before reaching the one you meant.</p>
 
-<ul>
-<li><strong>The finger check assumes an upright hand.</strong> It compares y coordinates only. Rotate your hand ninety degrees and a raised finger is no longer above its knuckle, so the count collapses. A rotation invariant version would compare each fingertip's distance from the wrist instead.</li>
-<li><strong>Gesture is read every frame, with no debounce.</strong> Moving from one finger to three passes through two on the way, and if a tick lands during that transit the snake turns the wrong way. Requiring the same count on two or three consecutive frames would remove it.</li>
-<li><strong>There is a dead variable.</strong> <code>lastGesture</code> is initialised to 3 and never read again. It looks like the beginning of exactly the debounce described above.</li>
-<li><strong>Food can spawn inside the snake.</strong> The new position is a plain random tile with no check against the body, so on a long snake it can appear underneath it.</li>
-</ul>
+<h2>Where it is fragile</h2>
 
-<p><em>[Your turn: did any of these actually bite you while playing, or did it hold up well enough that you moved on? That is worth saying either way.]</em></p>
+<p><strong>The finger test assumes an upright hand.</strong> It compares y coordinates and nothing else. Rotate your hand ninety degrees and a raised finger is no longer above its knuckle, so the count collapses towards zero and the snake stops responding. Measuring each fingertip's distance from the wrist instead of its height would make the test rotation invariant, at the cost of a square root per finger.</p>
 
-<h2>What I would do next</h2>
+<p><strong>There is no debounce.</strong> The 200ms tick hides most of the transitional noise, as described above, but not all of it. If a tick lands exactly while your fingers are passing through two on the way to three, the snake turns and it was not what you asked for. Requiring the same count on two consecutive frames before committing would remove that without any felt lag, because the game only reads direction five times a second anyway.</p>
 
-<p>The debounce is the highest value change for the least work, and <code>lastGesture</code> is already sitting there waiting for it. Requiring two matching frames before committing a direction would cut the accidental turns without making the controls feel sluggish, because the game only reads direction every 200ms anyway.</p>
+<p>There is a variable called <code>lastGesture</code> in the file, initialised and never read again. It is the start of exactly that debounce.</p>
 
-<p><em>[Your turn: anything you would rebuild differently if you started again?]</em></p>
+<p><strong>Food can spawn inside the snake.</strong> The replacement position is a plain random tile with no check against the body, so on a long snake it can appear underneath one of its own segments. The fix is a loop that rerolls until the chosen tile is not occupied, which is fine on a twenty by twenty grid where the snake will never be long enough for that loop to be slow.</p>
+
+<h2>What I would change first</h2>
+
+<p>The debounce, because it is the largest gain for the least work and the variable is already sitting there waiting for it.</p>
+
+<p>After that, the rotation invariant finger test, which is the difference between a demo that works when you hold your hand the way the author did and one that works when someone else tries it.</p>
