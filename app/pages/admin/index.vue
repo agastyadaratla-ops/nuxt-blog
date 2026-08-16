@@ -73,5 +73,8 @@ useHead({ title: 'Dashboard' })
         </NuxtLink>
       </li>
     </ul>
+
+    <!-- TEMPORARY: remove with RlsDiagnostic.vue and supabase/diagnose-rls.sql -->
+    <RlsDiagnostic />
   </div>
 </template>

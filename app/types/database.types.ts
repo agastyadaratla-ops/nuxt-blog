@@ -49,7 +49,14 @@ export type Database = {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      // TEMPORARY: paired with supabase/diagnose-rls.sql. Remove both once the
+      // insert-policy problem is understood.
+      whoami: {
+        Args: Record<PropertyKey, never>
+        Returns: { uid: string | null; role: string | null; jwt: unknown }
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }
