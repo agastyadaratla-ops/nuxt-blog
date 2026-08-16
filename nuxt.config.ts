@@ -37,6 +37,13 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'en' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        // Google Search Console ownership token. Public by design: it proves
+        // control of the site, it does not grant access to anything. Google
+        // rechecks it periodically, so it has to stay in place.
+        {
+          name: 'google-site-verification',
+          content: 'JroVbiylgF_M18d1t1dT8bnHdzCnbYkEZS-M2pr2S5A',
+        },
       ],
     },
   },
