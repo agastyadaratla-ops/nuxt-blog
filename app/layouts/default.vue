@@ -10,8 +10,10 @@ async function signOut() {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
-    <header class="border-b border-line">
+  <div class="relative flex min-h-screen flex-col">
+    <PageGrid />
+
+    <header class="relative z-10 border-b border-line">
       <div
         class="mx-auto flex h-20 w-full max-w-5xl items-center justify-between gap-6 px-6"
       >
@@ -54,11 +56,11 @@ async function signOut() {
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-5xl flex-1 px-6 py-16">
+    <main class="relative z-10 mx-auto w-full max-w-5xl flex-1 px-6 py-16">
       <slot />
     </main>
 
-    <footer class="mt-auto border-t border-line">
+    <footer class="relative z-10 mt-auto border-t border-line">
       <div
         class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-8"
       >

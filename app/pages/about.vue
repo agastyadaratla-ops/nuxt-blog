@@ -47,25 +47,23 @@ useHead({
 
 <template>
   <div>
-    <HeroScene mark="00" class="py-6">
-      <header class="grid gap-x-6 gap-y-4 md:grid-cols-12">
-        <p class="label md:col-span-3 md:pt-3">About</p>
+    <header class="grid gap-x-6 gap-y-4 md:grid-cols-12">
+      <p class="label md:col-span-3 md:pt-3">About</p>
 
-        <div class="md:col-span-9">
-          <RevealText
-            text="Agastya Daratla"
-            as="h1"
-            class="display text-5xl sm:text-6xl"
-          />
-          <ScrollReveal :delay="0.25">
-            <p class="mt-5 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
-              I build things with computers and circuits, and I write down how
-              it actually went.
-            </p>
-          </ScrollReveal>
-        </div>
-      </header>
-    </HeroScene>
+      <div class="md:col-span-9">
+        <RevealText
+          text="Agastya Daratla"
+          as="h1"
+          class="display text-5xl sm:text-6xl"
+        />
+        <ScrollReveal :delay="0.25">
+          <p class="mt-5 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
+            I build things with computers and circuits, and I write down how it
+            actually went.
+          </p>
+        </ScrollReveal>
+      </div>
+    </header>
 
     <ScrollReveal>
       <section class="mt-20 grid gap-x-6 gap-y-4 border-t border-line pt-10 md:grid-cols-12">

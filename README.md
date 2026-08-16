@@ -144,8 +144,15 @@ Three rules the components follow, all of which are easy to break by accident:
 - **Parallax is skipped on coarse pointers.** It fights the browser's own
   scroll compositing on touch devices.
 
-Depth levels follow `data-depth="0".."5"`, parallaxed by the factors in
-`DEPTH_FACTOR`. Decorative layers are `aria-hidden`.
+`PageGrid.vue` draws the hairline grid behind every page, fixed rather than
+scrolling, with lines on the container edges and every third column. Content
+sits above it at `z-10`.
+
+`DEPTH_FACTOR` and the `data-depth` parallax helper in `useScrollMotion.ts`
+are still there and still work, but nothing currently uses them. The layered
+masthead they were built for was removed once its two decorative elements, a
+colour wash and an oversized numeral, were both cut. They're kept for whenever
+a page has real artwork to put on those planes.
 
 ## Commands
 

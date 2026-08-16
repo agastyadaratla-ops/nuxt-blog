@@ -17,25 +17,33 @@ useHead({ title: 'Agastya Daratla' })
 
 <template>
   <div>
-    <HeroScene mark="01" class="mb-14 py-6">
-      <header class="grid gap-x-6 gap-y-4 md:grid-cols-12">
-        <p class="label md:col-span-3 md:pt-3">Writing</p>
+    <!-- An introduction, not a section label. Someone arriving here should
+         learn who this is and what the blog is for; the About page is where
+         they go if they want the longer version. -->
+    <section class="grid gap-x-6 gap-y-4 pb-16 md:grid-cols-12">
+      <div class="md:col-span-9 md:col-start-4">
+        <RevealText
+          text="Agastya Daratla"
+          as="h1"
+          class="display text-5xl sm:text-6xl"
+        />
 
-        <div class="md:col-span-9">
-          <RevealText
-            text="Project log"
-            as="h1"
-            class="display text-5xl sm:text-6xl"
-          />
-          <ScrollReveal :delay="0.25">
-            <p class="mt-4 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
-              Documentation for the computer science and electronics projects I
-              build: the reasoning, the mistakes, and the fixes.
-            </p>
-          </ScrollReveal>
-        </div>
-      </header>
-    </HeroScene>
+        <ScrollReveal :delay="0.2">
+          <p class="mt-5 max-w-[56ch] text-lg leading-relaxed text-ink-soft">
+            I build things with computers and circuits, and I document how it
+            actually went. Every project here walks through the reasoning, the
+            options I turned down, what broke, and how I got past it.
+          </p>
+
+          <NuxtLink
+            to="/about"
+            class="label mt-6 inline-block text-accent transition-colors hover:text-ink"
+          >
+            More about me and how I write these →
+          </NuxtLink>
+        </ScrollReveal>
+      </div>
+    </section>
 
     <SetupNotice v-if="!ready" />
 
@@ -63,10 +71,14 @@ useHead({ title: 'Agastya Daratla' })
       </NuxtLink>
     </div>
 
-    <div v-else class="border-b border-line">
-      <ScrollReveal v-for="post in posts" :key="post.id">
-        <PostCard :post="post" />
-      </ScrollReveal>
-    </div>
+    <section v-else>
+      <h2 class="label">Recent posts</h2>
+
+      <div class="mt-4 border-b border-line">
+        <ScrollReveal v-for="post in posts" :key="post.id">
+          <PostCard :post="post" />
+        </ScrollReveal>
+      </div>
+    </section>
   </div>
 </template>
