@@ -17,31 +17,44 @@ useHead({ title: 'The Blog' })
 
 <template>
   <div>
-    <header class="mb-12">
-      <h1 class="font-serif text-4xl font-semibold tracking-tight">
-        The Blog
-      </h1>
-      <p class="mt-2 text-muted">Writing about whatever I'm building.</p>
+    <header class="mb-14 grid gap-x-6 gap-y-4 md:grid-cols-12">
+      <p class="label md:col-span-3 md:pt-3">Writing</p>
+
+      <div class="md:col-span-9">
+        <h1 class="display text-5xl sm:text-6xl">The Blog</h1>
+        <p class="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
+          Notes on whatever I'm building at the moment.
+        </p>
+      </div>
     </header>
 
     <SetupNotice v-if="!ready" />
 
-    <p v-else-if="status === 'pending'" class="text-muted">Loading posts…</p>
+    <p v-else-if="status === 'pending'" class="label border-t border-line py-10">
+      Loading posts…
+    </p>
 
-    <p v-else-if="error" class="rounded-md bg-red-50 p-4 text-sm text-red-700">
+    <p
+      v-else-if="error"
+      class="border-t border-line py-10 text-sm text-destructive"
+    >
       Could not load posts: {{ error.message }}
     </p>
 
     <!-- The "write one" prompt is for the author only; to a visitor it would
          be a link straight into a login wall. -->
-    <p v-else-if="!posts.length" class="text-muted">
-      No posts yet.
-      <NuxtLink v-if="user" to="/admin/new" class="text-accent underline">
-        Write the first one.
+    <div v-else-if="!posts.length" class="border-t border-line py-10">
+      <p class="text-ink-soft">Nothing published yet.</p>
+      <NuxtLink
+        v-if="user"
+        to="/admin/new"
+        class="label mt-3 inline-block text-accent"
+      >
+        Write the first one →
       </NuxtLink>
-    </p>
+    </div>
 
-    <div v-else class="space-y-12">
+    <div v-else class="border-b border-line">
       <PostCard v-for="post in posts" :key="post.id" :post="post" />
     </div>
   </div>

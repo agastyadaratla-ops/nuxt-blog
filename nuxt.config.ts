@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-08-16',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/supabase'],
+  // @nuxt/fonts downloads Newsreader and Roboto at build time and serves them
+  // from our own origin — no request to Google on page load, and no layout
+  // shift while a webfont arrives.
+  modules: ['@nuxtjs/supabase', '@nuxt/fonts'],
 
   css: ['~/assets/css/main.css'],
 

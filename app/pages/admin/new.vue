@@ -31,11 +31,11 @@ useHead({ title: 'New post' })
 
 <template>
   <div>
-    <NuxtLink to="/admin" class="text-sm text-muted hover:text-accent">
+    <NuxtLink to="/admin" class="label transition-colors hover:text-ink">
       ← Dashboard
     </NuxtLink>
 
-    <div class="mt-6">
+    <div class="mt-8">
       <PostEditor :saving="saving" :error="error" @submit="onSubmit" />
     </div>
   </div>

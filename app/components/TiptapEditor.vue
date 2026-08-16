@@ -1,8 +1,25 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
+// Aliased: the Lucide icon below is also called Image.
+import TiptapImage from '@tiptap/extension-image'
 import { Placeholder } from '@tiptap/extensions'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
+import {
+  Bold,
+  Code,
+  Heading2,
+  Heading3,
+  Image as ImageIcon,
+  Italic,
+  Link,
+  List,
+  ListOrdered,
+  Quote,
+  Redo2,
+  Strikethrough,
+  Undo2,
+} from '@lucide/vue'
 
 /**
  * The WYSIWYG surface. Owns nothing but the HTML string it edits.
@@ -32,7 +49,7 @@ const editor = useEditor({
         HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
       },
     }),
-    Image.configure({
+    TiptapImage.configure({
       // Base64 would embed whole images in the post HTML and bloat the row;
       // everything goes to storage and is referenced by URL instead.
       allowBase64: false,
@@ -188,10 +205,12 @@ function toggleLink() {
 }
 
 interface ToolbarButton {
-  label: string
+  icon: Component
   title: string
   isActive?: () => boolean
   run: () => void
+  /** Starts a new group in the toolbar, drawn as a hairline separator. */
+  divide?: boolean
 }
 
 const buttons = computed<ToolbarButton[]>(() => {
@@ -200,78 +219,82 @@ const buttons = computed<ToolbarButton[]>(() => {
 
   return [
     {
-      label: 'B',
+      icon: markRaw(Bold),
       title: 'Bold',
       isActive: () => e.isActive('bold'),
       run: () => e.chain().focus().toggleBold().run(),
     },
     {
-      label: 'I',
+      icon: markRaw(Italic),
       title: 'Italic',
       isActive: () => e.isActive('italic'),
       run: () => e.chain().focus().toggleItalic().run(),
     },
     {
-      label: 'S',
+      icon: markRaw(Strikethrough),
       title: 'Strikethrough',
       isActive: () => e.isActive('strike'),
       run: () => e.chain().focus().toggleStrike().run(),
     },
     {
-      label: 'H2',
+      icon: markRaw(Heading2),
       title: 'Heading',
+      divide: true,
       isActive: () => e.isActive('heading', { level: 2 }),
       run: () => e.chain().focus().toggleHeading({ level: 2 }).run(),
     },
     {
-      label: 'H3',
+      icon: markRaw(Heading3),
       title: 'Subheading',
       isActive: () => e.isActive('heading', { level: 3 }),
       run: () => e.chain().focus().toggleHeading({ level: 3 }).run(),
     },
     {
-      label: '• List',
+      icon: markRaw(List),
       title: 'Bullet list',
+      divide: true,
       isActive: () => e.isActive('bulletList'),
       run: () => e.chain().focus().toggleBulletList().run(),
     },
     {
-      label: '1. List',
+      icon: markRaw(ListOrdered),
       title: 'Numbered list',
       isActive: () => e.isActive('orderedList'),
       run: () => e.chain().focus().toggleOrderedList().run(),
     },
     {
-      label: '❝',
+      icon: markRaw(Quote),
       title: 'Quote',
       isActive: () => e.isActive('blockquote'),
       run: () => e.chain().focus().toggleBlockquote().run(),
     },
     {
-      label: '</>',
+      icon: markRaw(Code),
       title: 'Code block',
       isActive: () => e.isActive('codeBlock'),
       run: () => e.chain().focus().toggleCodeBlock().run(),
     },
     {
-      label: '🔗',
+      icon: markRaw(Link),
       title: 'Link',
+      divide: true,
       isActive: () => e.isActive('link'),
       run: toggleLink,
     },
     {
-      label: '🖼',
+      icon: markRaw(ImageIcon),
       title: 'Insert image (you can also paste or drag one in)',
       isActive: () => e.isActive('image'),
       run: pickImage,
     },
     {
-      label: '↶',
+      icon: markRaw(Undo2),
       title: 'Undo',
+      divide: true,
       run: () => e.chain().focus().undo().run(),
     },
     {
-      label: '↷',
+      icon: markRaw(Redo2),
       title: 'Redo',
       run: () => e.chain().focus().redo().run(),
     },
@@ -282,19 +305,31 @@ onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg border border-line bg-surface">
-    <div class="flex flex-wrap gap-1 border-b border-line bg-paper px-2 py-2">
-      <button
-        v-for="button in buttons"
-        :key="button.title"
-        type="button"
-        :title="button.title"
-        class="min-w-8 rounded px-2 py-1 text-sm font-medium text-muted transition hover:bg-line hover:text-ink"
-        :class="{ 'bg-accent-soft text-accent': button.isActive?.() }"
-        @click="button.run()"
-      >
-        {{ button.label }}
-      </button>
+  <div class="border border-line bg-surface">
+    <div
+      class="flex flex-wrap items-center gap-1 border-b border-line bg-paper px-2 py-2"
+    >
+      <template v-for="button in buttons" :key="button.title">
+        <span
+          v-if="button.divide"
+          class="mx-1 hidden h-5 w-px bg-line sm:block"
+          aria-hidden="true"
+        />
+
+        <!-- Icon-only, so the accessible name comes from aria-label, and
+             aria-pressed exposes the on/off state to screen readers. -->
+        <button
+          type="button"
+          :title="button.title"
+          :aria-label="button.title"
+          :aria-pressed="button.isActive ? button.isActive() : undefined"
+          class="flex size-11 items-center justify-center rounded-[2px] text-ink-soft transition-colors hover:bg-line hover:text-ink"
+          :class="{ 'bg-ink text-white hover:bg-ink hover:text-white': button.isActive?.() }"
+          @click="button.run()"
+        >
+          <component :is="button.icon" class="size-4" />
+        </button>
+      </template>
     </div>
 
     <input
@@ -306,11 +341,12 @@ onBeforeUnmount(() => editor.value?.destroy())
       @change="onFilePicked"
     />
 
-    <EditorContent :editor="editor" class="px-5 py-4" />
+    <EditorContent :editor="editor" class="px-6 py-5" />
 
     <p
       v-if="uploadsInFlight > 0"
-      class="border-t border-line px-5 py-2 text-sm text-muted"
+      class="label border-t border-line px-6 py-3"
+      aria-live="polite"
     >
       Uploading {{ uploadsInFlight }}
       {{ uploadsInFlight === 1 ? 'image' : 'images' }}…
@@ -318,7 +354,8 @@ onBeforeUnmount(() => editor.value?.destroy())
 
     <p
       v-if="uploadError"
-      class="border-t border-line px-5 py-2 text-sm text-red-700"
+      class="border-t border-line bg-destructive/5 px-6 py-3 text-sm text-destructive"
+      aria-live="polite"
     >
       {{ uploadError }}
     </p>

@@ -57,33 +57,33 @@ useHead({ title: 'Edit post' })
 
 <template>
   <div>
-    <div class="flex items-center justify-between">
-      <NuxtLink to="/admin" class="text-sm text-muted hover:text-accent">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <NuxtLink to="/admin" class="label transition-colors hover:text-ink">
         ← Dashboard
       </NuxtLink>
 
-      <div class="flex items-center gap-4 text-sm text-muted">
-        <span v-if="savedAt">Saved at {{ savedAt }}</span>
+      <div class="flex items-center gap-5">
+        <span v-if="savedAt" class="label">Saved {{ savedAt }}</span>
         <NuxtLink
           v-if="post?.published"
           :to="`/blog/${post.slug}`"
-          class="hover:text-accent"
+          class="label transition-colors hover:text-ink"
         >
           View live ↗
         </NuxtLink>
       </div>
     </div>
 
-    <p v-if="loading" class="mt-8 text-muted">Loading…</p>
+    <p v-if="loading" class="label mt-10">Loading…</p>
 
     <p
       v-else-if="!post"
-      class="mt-8 rounded-md bg-red-50 p-4 text-sm text-red-700"
+      class="mt-10 bg-destructive/5 px-3 py-2 text-sm text-destructive"
     >
       {{ error }}
     </p>
 
-    <div v-else class="mt-6">
+    <div v-else class="mt-8">
       <PostEditor
         :post="post"
         :saving="saving"

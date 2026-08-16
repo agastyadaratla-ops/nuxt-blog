@@ -24,51 +24,57 @@ useHead({ title: 'Dashboard' })
 
 <template>
   <div>
-    <header class="mb-8 flex items-center justify-between">
-      <h1 class="font-serif text-3xl font-semibold">Your posts</h1>
-      <NuxtLink
-        to="/admin/new"
-        class="rounded-md bg-ink px-4 py-2 text-sm font-medium text-white transition hover:bg-accent"
-      >
-        New post
-      </NuxtLink>
+    <header
+      class="mb-12 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-8"
+    >
+      <div>
+        <p class="label">Dashboard</p>
+        <h1 class="display mt-3 text-4xl sm:text-5xl">Your posts</h1>
+      </div>
+
+      <NuxtLink to="/admin/new" class="btn">New post</NuxtLink>
     </header>
 
-    <p v-if="loading" class="text-muted">Loading…</p>
+    <p v-if="loading" class="label">Loading…</p>
 
-    <p v-else-if="error" class="rounded-md bg-red-50 p-4 text-sm text-red-700">
+    <p
+      v-else-if="error"
+      class="bg-destructive/5 px-3 py-2 text-sm text-destructive"
+    >
       {{ error }}
     </p>
 
-    <p v-else-if="!posts.length" class="text-muted">
-      Nothing written yet. Start with a
-      <NuxtLink to="/admin/new" class="text-accent underline">new post</NuxtLink>.
-    </p>
+    <div v-else-if="!posts.length">
+      <p class="text-ink-soft">Nothing written yet.</p>
+      <NuxtLink to="/admin/new" class="label mt-3 inline-block text-accent">
+        Start a post →
+      </NuxtLink>
+    </div>
 
-    <ul v-else class="divide-y divide-line rounded-lg border border-line bg-surface">
-      <li v-for="post in posts" :key="post.id">
+    <ul v-else class="border-t border-line">
+      <li v-for="post in posts" :key="post.id" class="border-b border-line">
         <NuxtLink
           :to="`/admin/${post.id}`"
-          class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-paper"
+          class="group grid items-baseline gap-x-6 gap-y-2 py-6 md:grid-cols-12"
         >
-          <div class="min-w-0">
-            <p class="truncate font-medium">
-              {{ post.title || 'Untitled' }}
-            </p>
-            <p class="mt-0.5 text-sm text-muted">
-              Edited {{ formatDate(post.updated_at) }}
-            </p>
+          <div class="flex items-center gap-3 md:col-span-3">
+            <span
+              class="inline-block size-1.5 shrink-0 rounded-full"
+              :class="post.published ? 'bg-accent-bright' : 'bg-line'"
+            />
+            <span class="label">
+              {{ post.published ? 'Published' : 'Draft' }}
+            </span>
           </div>
 
-          <span
-            class="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
-            :class="
-              post.published
-                ? 'bg-accent-soft text-accent'
-                : 'bg-line text-muted'
-            "
+          <p
+            class="display truncate text-xl transition-colors group-hover:text-accent md:col-span-6"
           >
-            {{ post.published ? 'Published' : 'Draft' }}
+            {{ post.title || 'Untitled' }}
+          </p>
+
+          <span class="label md:col-span-3 md:text-right">
+            {{ formatDate(post.updated_at) }}
           </span>
         </NuxtLink>
       </li>

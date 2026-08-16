@@ -24,33 +24,46 @@ useHead({
 
 <template>
   <article v-if="post">
-    <NuxtLink to="/" class="text-sm text-muted hover:text-accent">
+    <NuxtLink to="/" class="label transition-colors hover:text-ink">
       ← All posts
     </NuxtLink>
 
-    <header class="mb-8 mt-6">
-      <time :datetime="post.created_at" class="text-sm text-muted">
-        {{ formatDate(post.created_at) }}
-      </time>
-      <h1
-        class="mt-2 font-serif text-4xl font-semibold leading-tight tracking-tight"
-      >
+    <header class="mt-8 border-b border-line pb-10">
+      <h1 class="display max-w-[18ch] text-4xl sm:text-5xl md:text-6xl">
         {{ post.title }}
       </h1>
+      <p
+        v-if="post.excerpt"
+        class="mt-5 max-w-[56ch] text-lg leading-relaxed text-ink-soft"
+      >
+        {{ post.excerpt }}
+      </p>
     </header>
 
     <img
       v-if="post.cover_url"
       :src="post.cover_url"
       alt=""
-      class="mb-10 aspect-[2/1] w-full rounded-lg border border-line object-cover"
+      class="my-12 aspect-[2/1] w-full object-cover"
     />
 
-    <!--
-      The HTML here was produced by the author's own TipTap editor and is
-      writable only by authenticated users (see the RLS policies), so it is
-      first-party content rather than untrusted input.
-    -->
-    <div class="prose-post" v-html="post.content" />
+    <div class="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12">
+      <!-- Publication date parked in the margin, newspaper-fashion. -->
+      <div class="md:col-span-3">
+        <time :datetime="post.created_at" class="label md:sticky md:top-10">
+          {{ formatDate(post.created_at) }}
+        </time>
+      </div>
+
+      <!--
+        The HTML here was produced by the author's own TipTap editor and is
+        writable only by authenticated users (see the RLS policies), so it is
+        first-party content rather than untrusted input.
+      -->
+      <div
+        class="prose-post max-w-[68ch] md:col-span-9"
+        v-html="post.content"
+      />
+    </div>
   </article>
 </template>

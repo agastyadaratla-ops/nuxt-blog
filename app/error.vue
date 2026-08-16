@@ -8,19 +8,18 @@ useHead({ title: `${props.error.statusCode}` })
 
 <template>
   <NuxtLayout>
-    <div class="py-16 text-center">
-      <p class="font-serif text-6xl font-semibold text-muted">
-        {{ error.statusCode }}
-      </p>
-      <p class="mt-4 text-lg">
-        {{ error.statusMessage || 'Something went wrong.' }}
-      </p>
-      <button
-        class="mt-8 rounded-md bg-ink px-5 py-2 text-sm font-medium text-white transition hover:bg-accent"
-        @click="clearError({ redirect: '/' })"
-      >
-        Back to the blog
-      </button>
+    <div class="grid gap-x-6 gap-y-4 py-10 md:grid-cols-12">
+      <p class="label md:col-span-3 md:pt-4">Error {{ error.statusCode }}</p>
+
+      <div class="md:col-span-9">
+        <h1 class="display text-4xl sm:text-5xl">
+          {{ error.statusMessage || 'Something went wrong.' }}
+        </h1>
+
+        <button type="button" class="btn mt-10" @click="clearError({ redirect: '/' })">
+          Back to the blog
+        </button>
+      </div>
     </div>
   </NuxtLayout>
 </template>

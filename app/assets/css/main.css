@@ -1,152 +1,311 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Design tokens
-   Warm editorial palette, system fonts only (nothing loaded over the network).
+   Design tokens — Swiss Modernism 2.0
+   See design-system/nuxt-blog/MASTER.md. The accent and button colours differ
+   from the generated palette on measured contrast grounds; the reasoning is
+   recorded there under "Applied Deviations".
 --------------------------------------------------------------------------- */
 @theme {
-  --color-paper: #faf9f7;
+  --color-paper: #fafafa;
   --color-surface: #ffffff;
-  --color-ink: #1c1917;
-  --color-muted: #78716c;
-  --color-line: #e7e5e4;
-  --color-accent: #b45309;
-  --color-accent-soft: #fef3c7;
+  --color-ink: #09090b; /* 19.06:1 on paper */
+  --color-ink-soft: #3f3f46; /* 10.01:1 */
+  --color-muted: #52525b; /*  7.41:1 */
+  --color-line: #e4e4e7;
+  --color-accent: #be185d; /*  5.78:1 — safe for text */
+  --color-accent-bright: #ec4899; /*  3.38:1 — NEVER for text */
+  --color-accent-soft: #fce7f3;
+  --color-ring: #18181b;
+  --color-destructive: #dc2626;
 
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia,
-    serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    sans-serif;
-}
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ---------------------------------------------------------------------------
-   Article body
-   The editor emits plain HTML, so these styles do the typographic work for
-   both the reading view and the editor itself (hence sharing one class).
---------------------------------------------------------------------------- */
-.prose-post {
-  font-family: var(--font-serif);
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: var(--color-ink);
+  /* Mathematical spacing scale — Swiss grids depend on consistent intervals. */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
 }
 
-.prose-post > * + * {
-  margin-top: 1.25em;
+/* Everything below is layered so plain Tailwind utilities still win when a
+   component needs to override one of these defaults. */
+
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Visible focus ring on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  button:not(:disabled),
+  a[href],
+  summary {
+    cursor: pointer;
+  }
 }
 
-.prose-post h1,
-.prose-post h2,
-.prose-post h3 {
-  font-weight: 600;
-  line-height: 1.25;
-  margin-top: 2em;
+/* Motion here is meaningful, never decorative — but honour the OS setting.
+   Unlayered and !important so nothing can reintroduce movement. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-.prose-post h1 {
-  font-size: 1.875rem;
-}
-.prose-post h2 {
-  font-size: 1.5rem;
-}
-.prose-post h3 {
-  font-size: 1.25rem;
-}
+@layer components {
+  /* -------------------------------------------------------------------------
+     Swiss typographic furniture
+  ------------------------------------------------------------------------- */
 
-.prose-post a {
-  color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
+  /* Small uppercase label — dates, section markers, nav. */
+  .label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
 
-.prose-post ul,
-.prose-post ol {
-  padding-left: 1.5rem;
-}
-.prose-post ul {
-  list-style: disc;
-}
-.prose-post ol {
-  list-style: decimal;
-}
-.prose-post li + li {
-  margin-top: 0.375em;
-}
+  /* Display headings: tight tracking, tight leading, large sizes. */
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
 
-.prose-post blockquote {
-  /* Rule matches the quote's own text colour so the two read as one unit. */
-  border-left: 2px solid var(--color-muted);
-  padding-left: 1rem;
-  font-style: italic;
-  color: var(--color-muted);
-}
+  /* -------------------------------------------------------------------------
+     Controls
+     Buttons are ink, not pink: white on the generated accent measures 3.38:1
+     and fails for label text. White on ink is 17.72:1.
+  ------------------------------------------------------------------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    border-radius: 2px;
+    background: var(--color-ink);
+    padding: 0.625rem 1.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ffffff;
+    transition: background-color 200ms ease;
+  }
 
-.prose-post code {
-  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
-  font-size: 0.875em;
-  background: var(--color-line);
-  padding: 0.15em 0.35em;
-  border-radius: 0.25rem;
-}
+  .btn:hover:not(:disabled) {
+    background: var(--color-accent);
+  }
 
-.prose-post pre {
-  background: var(--color-ink);
-  color: #f5f5f4;
-  padding: 1rem 1.25rem;
-  border-radius: 0.5rem;
-  overflow-x: auto;
-}
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 
-.prose-post pre code {
-  background: transparent;
-  padding: 0;
-  color: inherit;
-}
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    background: transparent;
+    padding: 0.625rem 1.25rem;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    transition:
+      border-color 200ms ease,
+      color 200ms ease;
+  }
 
-.prose-post hr {
-  border-color: var(--color-line);
-}
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-ink);
+  }
 
-.prose-post img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
-}
+  .btn-ghost:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 
-/* ---------------------------------------------------------------------------
-   TipTap editing surface
---------------------------------------------------------------------------- */
-.tiptap {
-  outline: none;
-  min-height: 24rem;
-}
+  /* 1rem minimum, otherwise iOS zooms the page on focus. */
+  .field {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    background: var(--color-surface);
+    padding: 0.625rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-ink);
+    transition: border-color 200ms ease;
+  }
 
-/* Embedded images: show which one is selected so delete/replace is obvious. */
-.tiptap img {
-  cursor: pointer;
-}
+  .field:focus {
+    border-color: var(--color-ring);
+  }
 
-.tiptap img.ProseMirror-selectednode {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
+  .field::placeholder {
+    color: var(--color-muted);
+  }
 
-/* Placeholder text for a brand-new, still-empty post. */
-.tiptap p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: var(--color-muted);
-  float: left;
-  height: 0;
-  pointer-events: none;
+  /* -------------------------------------------------------------------------
+     Article body
+     Shared by the reading view and the editor, so what you type is what ships.
+  ------------------------------------------------------------------------- */
+  .prose-post {
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+
+  .prose-post > * + * {
+    margin-top: 1.3em;
+  }
+
+  .prose-post h1,
+  .prose-post h2,
+  .prose-post h3 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin-top: 1.9em;
+  }
+
+  .prose-post h1 {
+    font-size: 2rem;
+  }
+  .prose-post h2 {
+    font-size: 1.625rem;
+  }
+  .prose-post h3 {
+    font-size: 1.3125rem;
+  }
+
+  .prose-post a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 200ms ease;
+  }
+
+  .prose-post a:hover {
+    color: var(--color-ink);
+  }
+
+  .prose-post ul,
+  .prose-post ol {
+    padding-left: 1.4rem;
+  }
+  .prose-post ul {
+    list-style: disc;
+  }
+  .prose-post ol {
+    list-style: decimal;
+  }
+  .prose-post li + li {
+    margin-top: 0.4em;
+  }
+
+  /* No side rule — size and indent carry the quote on their own. */
+  .prose-post blockquote {
+    margin-left: 0;
+    padding-left: var(--space-lg);
+    font-size: 1.3125rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--color-ink-soft);
+  }
+
+  .prose-post code {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 0.85em;
+    background: var(--color-line);
+    padding: 0.15em 0.35em;
+    border-radius: 2px;
+  }
+
+  .prose-post pre {
+    background: var(--color-ink);
+    color: #f4f4f5;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: 2px;
+    overflow-x: auto;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .prose-post pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .prose-post hr {
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    margin-block: var(--space-2xl);
+  }
+
+  .prose-post img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* -------------------------------------------------------------------------
+     TipTap editing surface
+  ------------------------------------------------------------------------- */
+  .tiptap {
+    outline: none;
+    min-height: 24rem;
+  }
+
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--color-muted);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .tiptap img {
+    cursor: pointer;
+  }
+
+  .tiptap img.ProseMirror-selectednode {
+    outline: 2px solid var(--color-accent-bright);
+    outline-offset: 2px;
+  }
 }

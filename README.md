@@ -100,6 +100,27 @@ crafted request with the anon key cannot read a draft or write a row.
 
 ---
 
+## Design
+
+The visual system is Swiss Modernism 2.0: a 12-column grid, asymmetric
+placement, hairline rules, tight display tracking, and Newsreader over Roboto.
+It's documented in
+[`design-system/nuxt-blog/MASTER.md`](design-system/nuxt-blog/MASTER.md),
+including the three generated recommendations that were overridden and why.
+
+Tokens live in `app/assets/css/main.css` under `@theme`. Everything else is
+layered (`@layer base` / `@layer components`) so ordinary Tailwind utilities
+still win when a component needs to override a default.
+
+Two rules worth keeping if you change colours:
+
+- `--color-accent` (`#be185d`, 5.78:1) is the only pink safe for text.
+  `--color-accent-bright` (`#ec4899`) measures 3.38:1 and must stay decorative.
+- Buttons are ink on white, not pink — white on `#ec4899` fails for label text.
+
+Fonts are downloaded at build time by `@nuxt/fonts` and served from your own
+origin, so no request reaches Google and there's no swap-in layout shift.
+
 ## Commands
 
 | Command | What it does |

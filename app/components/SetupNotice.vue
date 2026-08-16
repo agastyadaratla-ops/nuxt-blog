@@ -1,44 +1,36 @@
 <template>
-  <div class="rounded-lg border border-line bg-surface p-8">
-    <h2 class="font-serif text-2xl font-semibold">Almost there</h2>
-    <p class="mt-2 text-muted">
-      This blog needs a Supabase project before it can store anything. Three
-      steps:
+  <div class="border-t border-line pt-10">
+    <p class="label">Setup required</p>
+    <h2 class="display mt-3 text-3xl">Almost there</h2>
+    <p class="mt-3 max-w-[52ch] text-ink-soft">
+      This blog needs a Supabase project before it can store anything.
     </p>
 
-    <ol class="mt-6 space-y-4 text-sm">
-      <li class="flex gap-3">
-        <span
-          class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent"
-          >1</span
-        >
-        <span>
-          Open your Supabase project →
-          <strong>SQL Editor</strong> → paste in
-          <code class="rounded bg-line px-1 py-0.5">supabase/schema.sql</code>
+    <ol class="mt-10 border-t border-line">
+      <li class="grid gap-x-6 gap-y-2 border-b border-line py-6 md:grid-cols-12">
+        <span class="label md:col-span-3">Step 01</span>
+        <span class="md:col-span-9">
+          Open your Supabase project → <strong>SQL Editor</strong> → paste in
+          <code class="bg-line px-1 py-0.5 text-sm">supabase/schema.sql</code>
           and run it.
         </span>
       </li>
-      <li class="flex gap-3">
-        <span
-          class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent"
-          >2</span
-        >
-        <span>
+
+      <li class="grid gap-x-6 gap-y-2 border-b border-line py-6 md:grid-cols-12">
+        <span class="label md:col-span-3">Step 02</span>
+        <span class="md:col-span-9">
           Copy your Project URL and anon public key from
           <strong>Project Settings → API Keys</strong> into the
-          <code class="rounded bg-line px-1 py-0.5">.env</code> file.
+          <code class="bg-line px-1 py-0.5 text-sm">.env</code> file.
         </span>
       </li>
-      <li class="flex gap-3">
-        <span
-          class="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent"
-          >3</span
-        >
-        <span>
+
+      <li class="grid gap-x-6 gap-y-2 border-b border-line py-6 md:grid-cols-12">
+        <span class="label md:col-span-3">Step 03</span>
+        <span class="md:col-span-9">
           Create your author account under
           <strong>Authentication → Users → Add user</strong>, then restart
-          <code class="rounded bg-line px-1 py-0.5">npm run dev</code>.
+          <code class="bg-line px-1 py-0.5 text-sm">npm run dev</code>.
         </span>
       </li>
     </ol>

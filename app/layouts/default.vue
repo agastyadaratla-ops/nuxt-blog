@@ -11,13 +11,13 @@ async function signOut() {
 
 <template>
   <div class="flex min-h-screen flex-col">
-    <header class="border-b border-line bg-surface/70 backdrop-blur">
+    <header class="border-b border-line">
       <div
-        class="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-6"
+        class="mx-auto flex h-20 w-full max-w-5xl items-center justify-between gap-6 px-6"
       >
         <NuxtLink
           to="/"
-          class="font-serif text-xl font-semibold tracking-tight hover:text-accent"
+          class="display text-xl transition-colors hover:text-accent"
         >
           The Blog
         </NuxtLink>
@@ -27,14 +27,23 @@ async function signOut() {
           reachable only by typing the URL. Author controls appear once a
           session exists.
         -->
-        <nav class="flex items-center gap-5 text-sm">
-          <NuxtLink to="/" class="text-muted hover:text-ink">Posts</NuxtLink>
+        <nav class="flex items-center gap-6">
+          <NuxtLink to="/" class="label transition-colors hover:text-ink">
+            Posts
+          </NuxtLink>
 
           <template v-if="ready && user">
-            <NuxtLink to="/admin" class="text-muted hover:text-ink">
+            <NuxtLink
+              to="/admin"
+              class="label transition-colors hover:text-ink"
+            >
               Dashboard
             </NuxtLink>
-            <button class="text-muted hover:text-ink" @click="signOut">
+            <button
+              type="button"
+              class="label transition-colors hover:text-ink"
+              @click="signOut"
+            >
               Sign out
             </button>
           </template>
@@ -42,13 +51,16 @@ async function signOut() {
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
+    <main class="mx-auto w-full max-w-5xl flex-1 px-6 py-16">
       <slot />
     </main>
 
-    <footer class="border-t border-line">
-      <div class="mx-auto w-full max-w-3xl px-6 py-8 text-sm text-muted">
-        Built with Nuxt and Supabase.
+    <footer class="mt-auto border-t border-line">
+      <div
+        class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-8"
+      >
+        <p class="label">Built with Nuxt and Supabase</p>
+        <p class="label">© {{ new Date().getFullYear() }}</p>
       </div>
     </footer>
   </div>

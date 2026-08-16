@@ -45,43 +45,44 @@ useHead({
 
 <template>
   <div class="mx-auto max-w-sm">
-    <h1 class="font-serif text-3xl font-semibold">Sign in</h1>
-    <p class="mt-2 text-muted">Author access only.</p>
+    <p class="label">Authors only</p>
+    <h1 class="display mt-3 text-4xl">Sign in</h1>
 
-    <SetupNotice v-if="!ready" class="mt-8" />
+    <SetupNotice v-if="!ready" class="mt-10" />
 
-    <form v-else class="mt-8 space-y-4" @submit.prevent="onSubmit">
-      <label class="block">
-        <span class="mb-1 block text-sm font-medium text-muted">Email</span>
+    <form v-else class="mt-10 space-y-5" @submit.prevent="onSubmit">
+      <div>
+        <label for="email" class="label mb-2 block">Email</label>
         <input
+          id="email"
           v-model="email"
           type="email"
           required
           autocomplete="email"
-          class="w-full rounded-md border border-line bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+          class="field"
         />
-      </label>
+      </div>
 
-      <label class="block">
-        <span class="mb-1 block text-sm font-medium text-muted">Password</span>
+      <div>
+        <label for="password" class="label mb-2 block">Password</label>
         <input
+          id="password"
           v-model="password"
           type="password"
           required
           autocomplete="current-password"
-          class="w-full rounded-md border border-line bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+          class="field"
         />
-      </label>
+      </div>
 
-      <p v-if="error" class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+      <p
+        v-if="error"
+        class="bg-destructive/5 px-3 py-2 text-sm text-destructive"
+      >
         {{ error }}
       </p>
 
-      <button
-        type="submit"
-        :disabled="submitting"
-        class="w-full rounded-md bg-ink px-4 py-2 font-medium text-white transition hover:bg-accent disabled:opacity-40"
-      >
+      <button type="submit" :disabled="submitting" class="btn w-full">
         {{ submitting ? 'Signing in…' : 'Sign in' }}
       </button>
     </form>

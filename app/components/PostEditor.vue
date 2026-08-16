@@ -93,93 +93,105 @@ function onDelete() {
 </script>
 
 <template>
-  <form class="space-y-6" @submit.prevent="onSubmit">
-    <input
-      v-model="title"
-      type="text"
-      placeholder="Post title"
-      class="w-full border-0 bg-transparent p-0 font-serif text-4xl font-semibold placeholder:text-muted/50 focus:outline-none"
-    />
+  <form class="space-y-8" @submit.prevent="onSubmit">
+    <div>
+      <label for="post-title" class="label mb-3 block">Title</label>
+      <input
+        id="post-title"
+        v-model="title"
+        type="text"
+        placeholder="Untitled"
+        class="display w-full border-0 border-b border-line bg-transparent px-0 pb-3 text-4xl placeholder:text-muted/40 focus:border-ink"
+      />
+    </div>
 
-    <div class="grid gap-4 sm:grid-cols-2">
-      <label class="block">
-        <span class="mb-1 block text-sm font-medium text-muted">URL slug</span>
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div>
+        <label for="post-slug" class="label mb-2 block">URL slug</label>
         <input
+          id="post-slug"
           v-model="slug"
           type="text"
-          class="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          class="field"
           @input="slugTouched = true"
         />
-      </label>
+      </div>
 
-      <label class="block">
-        <span class="mb-1 block text-sm font-medium text-muted">
-          Cover image
-        </span>
+      <div>
+        <label for="post-cover" class="label mb-2 block">Cover image</label>
         <input
+          id="post-cover"
           type="file"
           accept="image/*"
           :disabled="uploading"
-          class="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-line file:px-2 file:py-1 file:text-xs"
+          class="field cursor-pointer file:mr-3 file:cursor-pointer file:border-0 file:bg-line file:px-2 file:py-1 file:font-sans file:text-xs"
           @change="onCoverSelected"
         />
-      </label>
+      </div>
     </div>
 
-    <p v-if="uploading" class="text-sm text-muted">Uploading image…</p>
-    <p v-if="uploadError" class="text-sm text-red-700">{{ uploadError }}</p>
+    <p v-if="uploading" class="label">Uploading image…</p>
+    <p
+      v-if="uploadError"
+      class="bg-destructive/5 px-3 py-2 text-sm text-destructive"
+    >
+      {{ uploadError }}
+    </p>
 
     <div v-if="coverUrl" class="relative">
       <img
         :src="coverUrl"
         alt="Cover preview"
-        class="aspect-[2/1] w-full rounded-lg border border-line object-cover"
+        class="aspect-[2/1] w-full object-cover"
       />
       <button
         type="button"
-        class="absolute right-3 top-3 rounded-md bg-ink/80 px-3 py-1 text-xs text-white hover:bg-ink"
+        class="label absolute right-3 top-3 bg-ink px-3 py-1.5 text-white transition-colors hover:bg-accent"
         @click="coverUrl = null"
       >
         Remove
       </button>
     </div>
 
-    <label class="block">
-      <span class="mb-1 block text-sm font-medium text-muted">
-        Excerpt
-        <span class="font-normal">— the teaser shown on the post list</span>
-      </span>
+    <div>
+      <label for="post-excerpt" class="label mb-2 block">
+        Excerpt — the teaser shown on the post list
+      </label>
       <textarea
+        id="post-excerpt"
         v-model="excerpt"
         rows="2"
-        class="w-full resize-y rounded-md border border-line bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none"
+        class="field resize-y"
       />
-    </label>
+    </div>
 
-    <ClientOnly>
-      <TiptapEditor v-model="content" :upload="uploadImage" />
-      <template #fallback>
-        <div
-          class="h-96 animate-pulse rounded-lg border border-line bg-surface"
-        />
-      </template>
-    </ClientOnly>
+    <div>
+      <p class="label mb-2">Body</p>
+      <ClientOnly>
+        <TiptapEditor v-model="content" :upload="uploadImage" />
+        <template #fallback>
+          <div class="h-96 animate-pulse border border-line bg-surface" />
+        </template>
+      </ClientOnly>
+    </div>
 
-    <p v-if="error" class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+    <p v-if="error" class="bg-destructive/5 px-3 py-2 text-sm text-destructive">
       {{ error }}
     </p>
 
     <div
-      class="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6"
+      class="flex flex-wrap items-center justify-between gap-6 border-t border-line pt-8"
     >
-      <label class="flex items-center gap-2 text-sm">
+      <label class="flex cursor-pointer items-center gap-3">
         <input
           v-model="published"
           type="checkbox"
-          class="size-4 rounded border-line accent-[var(--color-accent)]"
+          class="size-4 cursor-pointer accent-[var(--color-ink)]"
         />
-        <span>
-          {{ published ? 'Published' : 'Draft' }}
+        <span class="text-sm">
+          <span class="font-medium">
+            {{ published ? 'Published' : 'Draft' }}
+          </span>
           <span class="text-muted">
             — {{ published ? 'visible to everyone' : 'only visible to you' }}
           </span>
@@ -190,17 +202,13 @@ function onDelete() {
         <button
           v-if="post"
           type="button"
-          class="rounded-md px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+          class="btn-ghost text-destructive"
           @click="onDelete"
         >
           Delete
         </button>
 
-        <button
-          type="submit"
-          :disabled="!canSave"
-          class="rounded-md bg-ink px-5 py-2 text-sm font-medium text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
-        >
+        <button type="submit" :disabled="!canSave" class="btn">
           {{ saving ? 'Saving…' : 'Save' }}
         </button>
       </div>

@@ -5,29 +5,40 @@ defineProps<{ post: Post }>()
 </script>
 
 <template>
-  <article class="group">
-    <NuxtLink :to="`/blog/${post.slug}`" class="block">
-      <img
-        v-if="post.cover_url"
-        :src="post.cover_url"
-        :alt="''"
-        class="mb-4 aspect-[2/1] w-full rounded-lg border border-line object-cover"
-        loading="lazy"
-      />
-
-      <time :datetime="post.created_at" class="text-sm text-muted">
+  <article class="grid gap-x-6 gap-y-4 border-t border-line py-10 md:grid-cols-12">
+    <!-- Date sits in its own narrow column: the asymmetric split is what makes
+         the grid read as a grid rather than a stack of cards. -->
+    <div class="md:col-span-3">
+      <time :datetime="post.created_at" class="label">
         {{ formatDate(post.created_at) }}
       </time>
+    </div>
 
-      <h2
-        class="mt-1 font-serif text-2xl font-semibold leading-snug group-hover:text-accent"
-      >
-        {{ post.title }}
-      </h2>
+    <div class="md:col-span-9">
+      <NuxtLink :to="`/blog/${post.slug}`" class="group block">
+        <img
+          v-if="post.cover_url"
+          :src="post.cover_url"
+          alt=""
+          class="mb-6 aspect-[16/9] w-full object-cover"
+          loading="lazy"
+        />
 
-      <p v-if="post.excerpt" class="mt-2 leading-relaxed text-muted">
-        {{ post.excerpt }}
-      </p>
-    </NuxtLink>
+        <h2
+          class="display text-3xl transition-colors group-hover:text-accent sm:text-4xl"
+        >
+          {{ post.title }}
+        </h2>
+
+        <p
+          v-if="post.excerpt"
+          class="mt-3 max-w-[58ch] text-ink-soft leading-relaxed"
+        >
+          {{ post.excerpt }}
+        </p>
+
+        <span class="label mt-4 inline-block text-accent">Read →</span>
+      </NuxtLink>
+    </div>
   </article>
 </template>
