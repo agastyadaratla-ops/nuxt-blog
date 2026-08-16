@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const ready = useSupabaseReady()
+const user = useSupabaseUser()
 const { listPublished } = usePostsRepo()
 
 const {
@@ -31,9 +32,11 @@ useHead({ title: 'The Blog' })
       Could not load posts: {{ error.message }}
     </p>
 
+    <!-- The "write one" prompt is for the author only; to a visitor it would
+         be a link straight into a login wall. -->
     <p v-else-if="!posts.length" class="text-muted">
       No posts yet.
-      <NuxtLink to="/admin/new" class="text-accent underline">
+      <NuxtLink v-if="user" to="/admin/new" class="text-accent underline">
         Write the first one.
       </NuxtLink>
     </p>

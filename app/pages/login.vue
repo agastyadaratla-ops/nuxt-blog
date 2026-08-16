@@ -34,7 +34,13 @@ async function onSubmit() {
   submitting.value = false
 }
 
-useHead({ title: 'Sign in' })
+// Unlinked from the site, so keep it out of search results too. This is
+// obscurity, not security — the actual protection is Supabase auth plus the
+// RLS policies, which hold regardless of who finds this page.
+useHead({
+  title: 'Sign in',
+  meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+})
 </script>
 
 <template>

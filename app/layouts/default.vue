@@ -22,21 +22,21 @@ async function signOut() {
           The Blog
         </NuxtLink>
 
+        <!--
+          No sign-in link. Visitors should never see a way in — /login is
+          reachable only by typing the URL. Author controls appear once a
+          session exists.
+        -->
         <nav class="flex items-center gap-5 text-sm">
           <NuxtLink to="/" class="text-muted hover:text-ink">Posts</NuxtLink>
 
-          <template v-if="ready">
-            <template v-if="user">
-              <NuxtLink to="/admin" class="text-muted hover:text-ink">
-                Dashboard
-              </NuxtLink>
-              <button class="text-muted hover:text-ink" @click="signOut">
-                Sign out
-              </button>
-            </template>
-            <NuxtLink v-else to="/login" class="text-muted hover:text-ink">
-              Sign in
+          <template v-if="ready && user">
+            <NuxtLink to="/admin" class="text-muted hover:text-ink">
+              Dashboard
             </NuxtLink>
+            <button class="text-muted hover:text-ink" @click="signOut">
+              Sign out
+            </button>
           </template>
         </nav>
       </div>
