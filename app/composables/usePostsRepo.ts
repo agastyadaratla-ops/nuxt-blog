@@ -57,6 +57,13 @@ export function usePostsRepo() {
   }
 
   async function create(input: PostInput, authorId: string): Promise<Post> {
+    // Without this, a missing id reaches Postgres as a null author_id and the
+    // insert policy rejects it as an RLS violation — an error that points at
+    // the database when the real fault is here. Fail plainly instead.
+    if (!authorId) {
+      throw new Error('Not signed in — cannot save a post without an author.')
+    }
+
     const { data, error } = await supabase
       .from('posts')
       .insert({ ...input, author_id: authorId })

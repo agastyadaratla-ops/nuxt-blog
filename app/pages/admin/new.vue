@@ -4,19 +4,19 @@ import type { PostInput } from '~/types/database.types'
 definePageMeta({ middleware: 'auth' })
 
 const { create } = usePostsRepo()
-const user = useSupabaseUser()
+const authorId = useAuthorId()
 
 const saving = ref(false)
 const error = ref<string | null>(null)
 
 async function onSubmit(input: PostInput) {
-  if (!user.value) return
+  if (!authorId.value) return
 
   saving.value = true
   error.value = null
 
   try {
-    const post = await create(input, user.value.id)
+    const post = await create(input, authorId.value)
     // Move to the edit route so a second save updates rather than duplicates.
     await navigateTo(`/admin/${post.id}`)
   } catch (err) {
