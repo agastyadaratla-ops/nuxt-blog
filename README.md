@@ -10,6 +10,25 @@ for storage, TipTap for the editor.
 - Images embed inside a post body three ways: the 🖼 toolbar button, pasting
   from the clipboard, or dragging a file onto the editor
 
+### Video in a post body
+
+Two toolbar buttons, for two different jobs:
+
+- **Embed** takes a YouTube or Vimeo link and builds a responsive player.
+  Nothing is stored on your account, YouTube handles transcoding and adaptive
+  quality, and it uses `youtube-nocookie.com` so no tracking cookie is set
+  until the reader presses play.
+- **Upload** puts a short clip in Supabase Storage and serves it directly.
+
+Only the video ID is ever read out of a pasted link; the iframe `src` is then
+rebuilt from a fixed template in `app/utils/videoUrl.ts`. A lookalike domain
+such as `youtube.com.evil.com` is rejected rather than embedded.
+
+Uploads are capped at 50MB, which is Supabase's free-tier limit. Past that you
+get a message telling you to compress the clip or use YouTube, rather than a
+generic storage error. Prefer MP4: `.mov` uploads work but do not play in
+every browser, and the editor says so after one is added.
+
 ### Images in a post body
 
 All three routes upload to Supabase Storage and insert a URL — nothing is

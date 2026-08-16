@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import type { Post, PostInput } from '~/types/database.types'
 
 /**
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   remove: []
 }>()
 
-const { uploadImage } = usePostsRepo()
+const { uploadMedia } = usePostsRepo()
 
 const title = ref('')
 const slug = ref('')
@@ -62,7 +62,7 @@ async function onCoverSelected(event: Event) {
   uploadError.value = null
 
   try {
-    coverUrl.value = await uploadImage(file)
+    coverUrl.value = await uploadMedia(file)
   } catch (error) {
     uploadError.value = (error as Error).message
   } finally {
@@ -168,7 +168,7 @@ function onDelete() {
     <div>
       <p class="label mb-2">Body</p>
       <ClientOnly>
-        <TiptapEditor v-model="content" :upload="uploadImage" />
+        <TiptapEditor v-model="content" :upload="uploadMedia" />
         <template #fallback>
           <div class="h-96 animate-pulse border border-line bg-surface" />
         </template>
@@ -215,3 +215,4 @@ function onDelete() {
     </div>
   </form>
 </template>
+

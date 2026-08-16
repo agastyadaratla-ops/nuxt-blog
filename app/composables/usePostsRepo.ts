@@ -1,5 +1,8 @@
 import type { Database, Post, PostInput } from '~/types/database.types'
 
+/** Supabase rejects anything larger at the storage layer on the free tier. */
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+
 /**
  * The single place that talks to the `posts` table and the `covers` bucket.
  *
@@ -99,16 +102,33 @@ export function usePostsRepo() {
   }
 
   /**
-   * Upload an image and return its public URL. Serves both cover images and
-   * pictures embedded in a post body — they share the one bucket.
+   * Upload a file and return its public URL. Serves cover images, pictures
+   * embedded in a post body, and short video clips; they share one bucket.
+   *
+   * The size check is here rather than at the call site because Supabase
+   * rejects oversized uploads with a generic storage error that says nothing
+   * about what to do next.
    */
-  async function uploadImage(file: File): Promise<string> {
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  async function uploadMedia(file: File): Promise<string> {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      const actual = Math.round(file.size / 1024 / 1024)
+      const limit = Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)
+
+      throw new Error(
+        `That file is ${actual}MB and the storage limit is ${limit}MB. Compress it, or put it on YouTube and embed the link instead.`,
+      )
+    }
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'bin'
     const path = `${crypto.randomUUID()}.${ext}`
 
     const { error } = await supabase.storage
       .from('covers')
-      .upload(path, file, { cacheControl: '3600', upsert: false })
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || undefined,
+      })
 
     if (error) throw new Error(error.message)
 
@@ -124,6 +144,6 @@ export function usePostsRepo() {
     create,
     update,
     remove,
-    uploadImage,
+    uploadMedia,
   }
 }

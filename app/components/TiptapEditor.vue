@@ -8,6 +8,7 @@ import { EditorContent, useEditor } from '@tiptap/vue-3'
 import {
   Bold,
   Code,
+  Film,
   Heading2,
   Heading3,
   Image as ImageIcon,
@@ -15,11 +16,13 @@ import {
   Link,
   List,
   ListOrdered,
+  MonitorPlay,
   Quote,
   Redo2,
   Strikethrough,
   Undo2,
 } from '@lucide/vue'
+import { VideoEmbed, VideoFile } from '~/tiptap/videoNodes'
 
 /**
  * The WYSIWYG surface. Owns nothing but the HTML string it edits.
@@ -34,6 +37,10 @@ const props = defineProps<{
 const model = defineModel<string>({ required: true })
 
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
+const videoInput = useTemplateRef<HTMLInputElement>('videoInput')
+
+/** Non-error feedback, so a warning is not dressed up in destructive red. */
+const notice = ref<string | null>(null)
 
 // A counter rather than a boolean: dropping three images at once starts three
 // concurrent uploads, and the indicator should persist until the last finishes.
@@ -56,6 +63,8 @@ const editor = useEditor({
       HTMLAttributes: { loading: 'lazy' },
     }),
     Placeholder.configure({ placeholder: 'Start writing your post…' }),
+    VideoEmbed,
+    VideoFile,
   ],
   editorProps: {
     attributes: { class: 'prose-post tiptap' },
@@ -163,6 +172,64 @@ async function insertImages(files: File[], at?: number, alt = '') {
 
 function pickImage() {
   fileInput.value?.click()
+}
+
+const VIDEO_EXTENSION = /\.(mp4|webm|ogv|ogg|mov|m4v)$/i
+
+function pickVideo() {
+  videoInput.value?.click()
+}
+
+/** Paste a YouTube or Vimeo link and get a player. */
+function embedVideo() {
+  const url = window.prompt('Paste a YouTube or Vimeo link')
+  if (!url) return
+
+  const parsed = parseVideoUrl(url)
+
+  if (!parsed) {
+    uploadError.value =
+      'That link was not recognised. YouTube and Vimeo links are supported.'
+    return
+  }
+
+  editor.value
+    ?.chain()
+    .focus()
+    .setVideoEmbed({ src: parsed.src, provider: parsed.provider })
+    .run()
+}
+
+async function onVideoPicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+
+  if (!file) return
+
+  if (!file.type.startsWith('video/') && !VIDEO_EXTENSION.test(file.name)) {
+    uploadError.value = `That doesn't look like a video file: ${describe([file])}`
+    return
+  }
+
+  uploadsInFlight.value++
+  uploadError.value = null
+  notice.value = null
+
+  try {
+    const src = await props.upload(file)
+    editor.value?.chain().focus().setVideoFile({ src, title: file.name }).run()
+
+    // QuickTime containers often carry codecs Chrome and Firefox refuse.
+    if (/\.mov$/i.test(file.name)) {
+      notice.value =
+        'Uploaded. Note that .mov files do not play in every browser; MP4 is the safer format.'
+    }
+  } catch (error) {
+    uploadError.value = (error as Error).message
+  } finally {
+    uploadsInFlight.value--
+  }
 }
 
 async function onFilePicked(event: Event) {
@@ -288,6 +355,18 @@ const buttons = computed<ToolbarButton[]>(() => {
       run: pickImage,
     },
     {
+      icon: markRaw(MonitorPlay),
+      title: 'Embed a YouTube or Vimeo video',
+      isActive: () => e.isActive('videoEmbed'),
+      run: embedVideo,
+    },
+    {
+      icon: markRaw(Film),
+      title: 'Upload a video clip',
+      isActive: () => e.isActive('videoFile'),
+      run: pickVideo,
+    },
+    {
       icon: markRaw(Undo2),
       title: 'Undo',
       divide: true,
@@ -341,6 +420,14 @@ onBeforeUnmount(() => editor.value?.destroy())
       @change="onFilePicked"
     />
 
+    <input
+      ref="videoInput"
+      type="file"
+      accept="video/*"
+      class="hidden"
+      @change="onVideoPicked"
+    />
+
     <EditorContent :editor="editor" class="px-6 py-5" />
 
     <p
@@ -350,6 +437,14 @@ onBeforeUnmount(() => editor.value?.destroy())
     >
       Uploading {{ uploadsInFlight }}
       {{ uploadsInFlight === 1 ? 'image' : 'images' }}…
+    </p>
+
+    <p
+      v-if="notice"
+      class="border-t border-line px-6 py-3 text-sm text-muted"
+      aria-live="polite"
+    >
+      {{ notice }}
     </p>
 
     <p
