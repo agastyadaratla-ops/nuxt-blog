@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * Layered masthead. Six depth planes, all drawn in CSS — there are no image
- * assets in this project, and the post covers are author-uploaded content
- * rather than art direction, so the atmosphere is built from type, rules and
- * a single soft accent shape.
+ * Layered masthead, drawn entirely in CSS: there are no image assets in this
+ * project, and post covers are author-uploaded content rather than art
+ * direction, so the depth is built from type and rules alone.
  *
- * Restrained on purpose: the Swiss grid is still the skeleton, and the depth
- * exists to give the page air, not to perform.
+ * Deliberately achromatic. An earlier version carried a large blurred colour
+ * wash at depth 1; it was removed by request, and the layers now read as
+ * structure rather than atmosphere.
  */
 const props = withDefaults(defineProps<{ mark?: string }>(), { mark: '01' })
 
@@ -33,13 +33,6 @@ onMounted(async () => {
       >
         {{ props.mark }}
       </span>
-    </div>
-
-    <!-- depth 1 — the one warm note in an otherwise achromatic palette -->
-    <div class="scene__layer depth-1" data-depth="1" aria-hidden="true">
-      <span
-        class="float-loop absolute left-[8%] top-[10%] block size-72 rounded-full bg-accent-bright/25"
-      />
     </div>
 
     <!-- depth 2 — the grid itself, made visible as hairlines -->

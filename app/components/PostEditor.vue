@@ -155,7 +155,7 @@ function onDelete() {
 
     <div>
       <label for="post-excerpt" class="label mb-2 block">
-        Excerpt — the teaser shown on the post list
+        Excerpt (the teaser shown on the post list)
       </label>
       <textarea
         id="post-excerpt"
@@ -193,7 +193,7 @@ function onDelete() {
             {{ published ? 'Published' : 'Draft' }}
           </span>
           <span class="text-muted">
-            — {{ published ? 'visible to everyone' : 'only visible to you' }}
+            ({{ published ? 'visible to everyone' : 'only visible to you' }})
           </span>
         </span>
       </label>

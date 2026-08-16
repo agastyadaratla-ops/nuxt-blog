@@ -16,15 +16,24 @@
 
 Three generated recommendations were overridden. Measured, not preference.
 
-**1. Accent is `#BE185D`, not `#EC4899`.**
-The generated accent scores 3.38:1 on the `#FAFAFA` background — below the
-4.5:1 this same file lists as a hard rule. `#BE185D` scores 5.78:1. The
-brighter `#EC4899` is retained only for non-text accents (rules, marks,
-hover fills), where 3:1 is sufficient.
+**1. The accent is blue `#1D4ED8`, not pink.**
+Two reasons, in order. The author rejected pink outright as not
+representative of the site. Independently, the generated `#EC4899` scored
+3.38:1 on the `#FAFAFA` background, below the 4.5:1 this same file lists as
+a hard rule, so it could never have been used for links regardless.
 
-**2. Buttons are `#18181B`, not pink.**
-The generated `.btn-primary` puts white on `#EC4899` — also 3.38:1, failing
-for button labels. White on `#18181B` scores 17.72:1.
+`#1D4ED8` scores 6.42:1 as text and 6.70:1 under white, so unlike the pink
+it works as a solid fill too. Black plus one signal colour is the classic
+International Style pairing, and blue stays clear of the red reserved for
+errors. `#3B82F6` (3.68:1) is kept for decorative marks only.
+
+**2. Buttons are `#18181B`.**
+The generated `.btn-primary` puts white on `#EC4899`, also 3.38:1 and
+failing for button labels. White on `#18181B` scores 17.72:1.
+
+**4. The masthead carries no colour wash.**
+An earlier build had a large blurred accent shape at depth 1. Removed by
+request; the depth layers are now type and rules only.
 
 **3. The "Newsletter / Content First" page pattern is not implemented.**
 It calls for an email capture form, a sticky signup, and "Join X,000
@@ -45,6 +54,10 @@ table below would have churned every component for no visual gain.
 ## Global Rules
 
 ### Color Palette
+
+> This is the generator's original output, kept for the record. The accent row
+> and the pink button spec below are **superseded** by Applied Deviations
+> above. The shipped accent is `#1D4ED8`.
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|

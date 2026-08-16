@@ -138,7 +138,7 @@ async function insertImages(files: File[], at?: number, alt = '') {
       const instance = editor.value
 
       if (!instance) {
-        uploadError.value = 'The editor was not ready — please try again.'
+        uploadError.value = 'The editor was not ready. Please try again.'
         return
       }
 

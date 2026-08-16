@@ -114,9 +114,11 @@ still win when a component needs to override a default.
 
 Two rules worth keeping if you change colours:
 
-- `--color-accent` (`#be185d`, 5.78:1) is the only pink safe for text.
-  `--color-accent-bright` (`#ec4899`) measures 3.38:1 and must stay decorative.
-- Buttons are ink on white, not pink — white on `#ec4899` fails for label text.
+- `--color-accent` (`#1d4ed8`, 6.42:1 on paper, 6.70:1 under white) is safe for
+  both text and solid fills. `--color-accent-bright` (`#3b82f6`) measures
+  3.68:1 and must stay decorative.
+- Keep the accent clear of `--color-destructive`. A red accent would read as an
+  error state everywhere it appeared.
 
 Fonts are downloaded at build time by `@nuxt/fonts` and served from your own
 origin, so no request reaches Google and there's no swap-in layout shift.

@@ -2,9 +2,10 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens — Swiss Modernism 2.0
-   See design-system/nuxt-blog/MASTER.md. The accent and button colours differ
-   from the generated palette on measured contrast grounds; the reasoning is
-   recorded there under "Applied Deviations".
+   Black plus a single signal colour, which is the classic International Style
+   pairing. Blue rather than the generated pink, and distinct from the red
+   reserved for errors. See design-system/nuxt-blog/MASTER.md for the measured
+   reasoning behind every value here.
 --------------------------------------------------------------------------- */
 @theme {
   --color-paper: #fafafa;
@@ -13,9 +14,9 @@
   --color-ink-soft: #3f3f46; /* 10.01:1 */
   --color-muted: #52525b; /*  7.41:1 */
   --color-line: #e4e4e7;
-  --color-accent: #be185d; /*  5.78:1 — safe for text */
-  --color-accent-bright: #ec4899; /*  3.38:1 — NEVER for text */
-  --color-accent-soft: #fce7f3;
+  --color-accent: #1d4ed8; /*  6.42:1 on paper, 6.70:1 under white */
+  --color-accent-bright: #3b82f6; /*  3.68:1 — decorative marks only */
+  --color-accent-soft: #dbeafe;
   --color-ring: #18181b;
   --color-destructive: #dc2626;
 

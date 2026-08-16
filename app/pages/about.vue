@@ -29,7 +29,7 @@ const method: Method[] = [
   {
     step: '04',
     title: 'The fix',
-    body: 'What the cause actually turned out to be — usually not what I first suspected — and what it took to get past it.',
+    body: 'What the cause actually turned out to be, usually not what I first suspected, and what it took to get past it.',
   },
 ]
 
@@ -39,7 +39,7 @@ useHead({
     {
       name: 'description',
       content:
-        'Agastya Daratla — documenting computer science and electronics projects, including the reasoning, the mistakes, and the fixes.',
+        'Agastya Daratla. Documenting computer science and electronics projects, including the reasoning, the mistakes, and the fixes.',
     },
   ],
 })
@@ -73,8 +73,8 @@ useHead({
 
         <div class="prose-post max-w-[62ch] md:col-span-9">
           <p>
-            This blog is documentation. Every project I take on — software or
-            electronics — gets written up here, and not as a tidy tutorial
+            This blog is documentation. Every project I take on, software or
+            electronics, gets written up here, and not as a tidy tutorial
             where everything works on the first try.
           </p>
           <p>

@@ -12,7 +12,7 @@ const {
   immediate: ready,
 })
 
-useHead({ title: 'The Blog' })
+useHead({ title: 'Agastya Daratla' })
 </script>
 
 <template>
@@ -23,14 +23,14 @@ useHead({ title: 'The Blog' })
 
         <div class="md:col-span-9">
           <RevealText
-            text="The Blog"
+            text="Project log"
             as="h1"
             class="display text-5xl sm:text-6xl"
           />
           <ScrollReveal :delay="0.25">
             <p class="mt-4 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
               Documentation for the computer science and electronics projects I
-              build — the reasoning, the mistakes, and the fixes.
+              build: the reasoning, the mistakes, and the fixes.
             </p>
           </ScrollReveal>
         </div>

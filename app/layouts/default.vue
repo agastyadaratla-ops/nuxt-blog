@@ -19,7 +19,7 @@ async function signOut() {
           to="/"
           class="display text-xl transition-colors hover:text-accent"
         >
-          The Blog
+          Agastya Daratla
         </NuxtLink>
 
         <!--
