@@ -119,6 +119,23 @@ crafted request with the anon key cannot read a draft or write a row.
 
 ---
 
+## Your details
+
+`app/utils/siteConfig.ts` holds your name, email, and GitHub username. Any
+field left empty is not rendered, so clearing one removes that link rather
+than shipping a broken one.
+
+## The About page
+
+Editable at `/admin/about`, same editor as a post. It is stored in the `posts`
+table under the reserved slug `about`, which is why it needed no new table,
+no new SQL, and no new RLS policies. That one row is filtered out of both the
+public post list and the dashboard listing, and surfaced under Pages instead.
+
+If the row does not exist yet, `/about` renders `DEFAULT_ABOUT_HTML` from
+`app/utils/aboutDefault.ts`, and opening the editor seeds it with the same
+text. The page is never blank and the first edit never starts from nothing.
+
 ## Design
 
 The visual system is Swiss Modernism 2.0: a 12-column grid, asymmetric

@@ -4,6 +4,16 @@ import type { Database, Post, PostInput } from '~/types/database.types'
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 /**
+ * The About page lives in the posts table under a reserved slug.
+ *
+ * It could have had its own table, but that would mean new SQL to run and new
+ * policies to get right. Reusing `posts` means the About page inherits the
+ * same RLS rules that already work, at the cost of having to filter this one
+ * row out of the listings.
+ */
+export const ABOUT_SLUG = 'about'
+
+/**
  * The single place that talks to the `posts` table and the `covers` bucket.
  *
  * Pages call these methods and never touch the Supabase client directly, so
@@ -19,6 +29,7 @@ export function usePostsRepo() {
       .from('posts')
       .select('*')
       .eq('published', true)
+      .neq('slug', ABOUT_SLUG)
       .order('created_at', { ascending: false })
 
     if (error) throw new Error(error.message)
@@ -42,6 +53,7 @@ export function usePostsRepo() {
     const { data, error } = await supabase
       .from('posts')
       .select('*')
+      .neq('slug', ABOUT_SLUG)
       .order('updated_at', { ascending: false })
 
     if (error) throw new Error(error.message)

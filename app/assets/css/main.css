@@ -285,6 +285,14 @@
     display: block;
   }
 
+  /* The opening line of the About page carries more weight than the rest,
+     without needing a separate non-editable field to hold it. */
+  .about-body > p:first-child {
+    font-size: 1.375rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+
   /* Video, in both the reading view and the editor. The editing surface also
      carries .prose-post, so these rules cover writing and reading alike. */
   .prose-post .video-embed {

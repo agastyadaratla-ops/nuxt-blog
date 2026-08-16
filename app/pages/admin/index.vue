@@ -79,5 +79,30 @@ useHead({ title: 'Dashboard' })
         </NuxtLink>
       </li>
     </ul>
+
+    <!-- Standing pages live in the same table under reserved slugs, so they
+         are filtered out of the list above and surfaced here instead. -->
+    <section class="mt-16">
+      <h2 class="label">Pages</h2>
+
+      <ul class="mt-4 border-t border-line">
+        <li class="border-b border-line">
+          <NuxtLink
+            to="/admin/about"
+            class="group grid items-baseline gap-x-6 gap-y-2 py-6 md:grid-cols-12"
+          >
+            <span class="label md:col-span-3">Always live</span>
+
+            <p
+              class="display text-xl transition-colors group-hover:text-accent md:col-span-6"
+            >
+              About
+            </p>
+
+            <span class="label md:col-span-3 md:text-right">Edit →</span>
+          </NuxtLink>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>

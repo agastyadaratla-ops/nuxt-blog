@@ -62,10 +62,12 @@ async function signOut() {
 
     <footer class="relative z-10 mt-auto border-t border-line">
       <div
-        class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-8"
+        class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-8"
       >
-        <p class="label">Built with Nuxt and Supabase</p>
-        <p class="label">© {{ new Date().getFullYear() }}</p>
+        <SiteLinks />
+        <p class="label">
+          © {{ new Date().getFullYear() }} {{ siteConfig.name }}
+        </p>
       </div>
     </footer>
   </div>

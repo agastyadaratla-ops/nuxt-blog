@@ -6,11 +6,20 @@ import type { Post, PostInput } from '~/types/database.types'
  * toggle. It owns the form state and hands a finished `PostInput` to the
  * parent, which decides whether that means an insert or an update.
  */
-const props = defineProps<{
-  post?: Post | null
-  saving: boolean
-  error: string | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    post?: Post | null
+    saving: boolean
+    error: string | null
+    /**
+     * 'page' hides the blog-post furniture. A standing page has no teaser, no
+     * cover, no editable slug and is never a draft, so showing those controls
+     * would only invite someone to break it.
+     */
+    variant?: 'post' | 'page'
+  }>(),
+  { variant: 'post' },
+)
 
 const emit = defineEmits<{
   submit: [input: PostInput]
@@ -105,7 +114,7 @@ function onDelete() {
       />
     </div>
 
-    <div class="grid gap-6 sm:grid-cols-2">
+    <div v-if="props.variant === 'post'" class="grid gap-6 sm:grid-cols-2">
       <div>
         <label for="post-slug" class="label mb-2 block">URL slug</label>
         <input
@@ -138,7 +147,7 @@ function onDelete() {
       {{ uploadError }}
     </p>
 
-    <div v-if="coverUrl" class="relative">
+    <div v-if="coverUrl && props.variant === 'post'" class="relative">
       <img
         :src="coverUrl"
         alt="Cover preview"
@@ -153,7 +162,7 @@ function onDelete() {
       </button>
     </div>
 
-    <div>
+    <div v-if="props.variant === 'post'">
       <label for="post-excerpt" class="label mb-2 block">
         Excerpt (the teaser shown on the post list)
       </label>
@@ -182,7 +191,10 @@ function onDelete() {
     <div
       class="flex flex-wrap items-center justify-between gap-6 border-t border-line pt-8"
     >
-      <label class="flex cursor-pointer items-center gap-3">
+      <label
+        v-if="props.variant === 'post'"
+        class="flex cursor-pointer items-center gap-3"
+      >
         <input
           v-model="published"
           type="checkbox"
@@ -197,10 +209,11 @@ function onDelete() {
           </span>
         </span>
       </label>
+      <span v-else />
 
       <div class="flex items-center gap-3">
         <button
-          v-if="post"
+          v-if="post && props.variant === 'post'"
           type="button"
           class="btn-ghost text-destructive"
           @click="onDelete"
