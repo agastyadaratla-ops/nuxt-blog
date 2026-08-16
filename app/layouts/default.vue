@@ -31,6 +31,9 @@ async function signOut() {
           <NuxtLink to="/" class="label transition-colors hover:text-ink">
             Posts
           </NuxtLink>
+          <NuxtLink to="/about" class="label transition-colors hover:text-ink">
+            About
+          </NuxtLink>
 
           <template v-if="ready && user">
             <NuxtLink

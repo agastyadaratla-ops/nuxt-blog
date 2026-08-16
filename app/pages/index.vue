@@ -28,8 +28,9 @@ useHead({ title: 'The Blog' })
             class="display text-5xl sm:text-6xl"
           />
           <ScrollReveal :delay="0.25">
-            <p class="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
-              Notes on whatever I'm building at the moment.
+            <p class="mt-4 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
+              Documentation for the computer science and electronics projects I
+              build — the reasoning, the mistakes, and the fixes.
             </p>
           </ScrollReveal>
         </div>
