@@ -7,6 +7,18 @@ for storage, TipTap for the editor.
 - Author dashboard at `/admin` — write, edit, delete, publish
 - Posts are drafts until you flip the Published toggle
 - Cover images upload straight to Supabase Storage
+- Images embed inside a post body three ways: the 🖼 toolbar button, pasting
+  from the clipboard, or dragging a file onto the editor
+
+### Images in a post body
+
+All three routes upload to Supabase Storage and insert a URL — nothing is
+stored as base64, so post rows stay small.
+
+The toolbar button asks for alt text (skippable). Paste and drag don't ask,
+because being prompted on every paste would be unbearable; those images get an
+empty `alt`. Dragging drops the image where the pointer is rather than at the
+old cursor position.
 
 ---
 

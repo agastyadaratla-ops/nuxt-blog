@@ -93,7 +93,10 @@ create policy "Authors can delete their own posts"
 
 
 -- ----------------------------------------------------------------------------
--- 4. Storage bucket for cover images
+-- 4. Storage bucket for post images
+--
+-- Holds both cover images and any pictures embedded in a post body.
+-- (The bucket is named "covers" for historical reasons.)
 -- ----------------------------------------------------------------------------
 
 insert into storage.buckets (id, name, public)

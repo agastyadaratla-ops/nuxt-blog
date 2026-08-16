@@ -91,8 +91,11 @@ export function usePostsRepo() {
     if (error) throw new Error(error.message)
   }
 
-  /** Upload a cover image and return its public URL. */
-  async function uploadCover(file: File): Promise<string> {
+  /**
+   * Upload an image and return its public URL. Serves both cover images and
+   * pictures embedded in a post body — they share the one bucket.
+   */
+  async function uploadImage(file: File): Promise<string> {
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${crypto.randomUUID()}.${ext}`
 
@@ -114,6 +117,6 @@ export function usePostsRepo() {
     create,
     update,
     remove,
-    uploadCover,
+    uploadImage,
   }
 }

@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import StarterKit from '@tiptap/starter-kit'
+import Image from '@tiptap/extension-image'
 import { Placeholder } from '@tiptap/extensions'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 
 /**
- * The WYSIWYG surface. Owns nothing but the HTML string it edits — the parent
- * decides what to do with it.
+ * The WYSIWYG surface. Owns nothing but the HTML string it edits.
+ *
+ * Image uploading is injected rather than imported so this component stays
+ * unaware of Supabase — it only knows "hand a File to this, get a URL back".
  */
+const props = defineProps<{
+  upload: (file: File) => Promise<string>
+}>()
+
 const model = defineModel<string>({ required: true })
+
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
+
+// A counter rather than a boolean: dropping three images at once starts three
+// concurrent uploads, and the indicator should persist until the last finishes.
+const uploadsInFlight = ref(0)
+const uploadError = ref<string | null>(null)
 
 const editor = useEditor({
   content: model.value,
@@ -18,10 +32,40 @@ const editor = useEditor({
         HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
       },
     }),
+    Image.configure({
+      // Base64 would embed whole images in the post HTML and bloat the row;
+      // everything goes to storage and is referenced by URL instead.
+      allowBase64: false,
+      HTMLAttributes: { loading: 'lazy' },
+    }),
     Placeholder.configure({ placeholder: 'Start writing your post…' }),
   ],
   editorProps: {
     attributes: { class: 'prose-post tiptap' },
+
+    handlePaste: (_view, event) => {
+      const files = imageFilesFrom(event.clipboardData?.files)
+      if (!files.length) return false
+
+      event.preventDefault()
+      void insertImages(files)
+      return true
+    },
+
+    handleDrop: (view, event) => {
+      const files = imageFilesFrom((event as DragEvent).dataTransfer?.files)
+      if (!files.length) return false
+
+      event.preventDefault()
+      // Drop the image where the pointer actually is, not at the old cursor.
+      const dropped = event as DragEvent
+      const coords = view.posAtCoords({
+        left: dropped.clientX,
+        top: dropped.clientY,
+      })
+      void insertImages(files, coords?.pos)
+      return true
+    },
   },
   onUpdate: ({ editor }) => {
     model.value = editor.getHTML()
@@ -35,6 +79,67 @@ watch(model, (value) => {
     editor.value.commands.setContent(value, { emitUpdate: false })
   }
 })
+
+function imageFilesFrom(list: FileList | null | undefined): File[] {
+  return Array.from(list ?? []).filter((file) =>
+    file.type.startsWith('image/'),
+  )
+}
+
+/**
+ * Upload each file and place it in the document. Sequential on purpose: after
+ * the first image lands, the cursor sits just after it, so the rest fall into
+ * the order they were dropped.
+ */
+async function insertImages(files: File[], at?: number, alt = '') {
+  uploadError.value = null
+  let position = at
+
+  for (const file of files) {
+    uploadsInFlight.value++
+
+    try {
+      const src = await props.upload(file)
+      const instance = editor.value
+      if (!instance) return
+
+      if (position === undefined) {
+        instance.chain().focus().setImage({ src, alt }).run()
+      } else {
+        instance
+          .chain()
+          .focus()
+          .insertContentAt(position, { type: 'image', attrs: { src, alt } })
+          .run()
+        // Subsequent images follow the cursor rather than stacking on the drop point.
+        position = undefined
+      }
+    } catch (error) {
+      uploadError.value = (error as Error).message
+    } finally {
+      uploadsInFlight.value--
+    }
+  }
+}
+
+function pickImage() {
+  fileInput.value?.click()
+}
+
+async function onFilePicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = imageFilesFrom(input.files)
+  input.value = '' // let the same file be chosen again after a failure
+
+  if (!files.length) return
+
+  // Only the deliberate toolbar path asks for alt text; prompting on every
+  // paste would be intolerable.
+  const alt =
+    window.prompt('Describe this image for screen readers (optional)') ?? ''
+
+  await insertImages(files, undefined, alt)
+}
 
 function toggleLink() {
   if (!editor.value) return
@@ -123,6 +228,12 @@ const buttons = computed<ToolbarButton[]>(() => {
       run: toggleLink,
     },
     {
+      label: '🖼',
+      title: 'Insert image (you can also paste or drag one in)',
+      isActive: () => e.isActive('image'),
+      run: pickImage,
+    },
+    {
       label: '↶',
       title: 'Undo',
       run: () => e.chain().focus().undo().run(),
@@ -154,6 +265,30 @@ onBeforeUnmount(() => editor.value?.destroy())
       </button>
     </div>
 
+    <input
+      ref="fileInput"
+      type="file"
+      accept="image/*"
+      multiple
+      class="hidden"
+      @change="onFilePicked"
+    />
+
     <EditorContent :editor="editor" class="px-5 py-4" />
+
+    <p
+      v-if="uploadsInFlight > 0"
+      class="border-t border-line px-5 py-2 text-sm text-muted"
+    >
+      Uploading {{ uploadsInFlight }}
+      {{ uploadsInFlight === 1 ? 'image' : 'images' }}…
+    </p>
+
+    <p
+      v-if="uploadError"
+      class="border-t border-line px-5 py-2 text-sm text-red-700"
+    >
+      {{ uploadError }}
+    </p>
   </div>
 </template>

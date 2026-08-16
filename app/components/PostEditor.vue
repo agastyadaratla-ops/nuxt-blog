@@ -17,7 +17,7 @@ const emit = defineEmits<{
   remove: []
 }>()
 
-const { uploadCover } = usePostsRepo()
+const { uploadImage } = usePostsRepo()
 
 const title = ref('')
 const slug = ref('')
@@ -62,7 +62,7 @@ async function onCoverSelected(event: Event) {
   uploadError.value = null
 
   try {
-    coverUrl.value = await uploadCover(file)
+    coverUrl.value = await uploadImage(file)
   } catch (error) {
     uploadError.value = (error as Error).message
   } finally {
@@ -157,7 +157,7 @@ function onDelete() {
     </label>
 
     <ClientOnly>
-      <TiptapEditor v-model="content" />
+      <TiptapEditor v-model="content" :upload="uploadImage" />
       <template #fallback>
         <div
           class="h-96 animate-pulse rounded-lg border border-line bg-surface"
