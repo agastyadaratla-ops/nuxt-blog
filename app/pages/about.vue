@@ -15,15 +15,30 @@ const { data: aboutPost } = await useAsyncData(
 
 const body = computed(() => aboutPost.value?.content || DEFAULT_ABOUT_HTML)
 
-useHead({
+const requestUrl = useRequestURL()
+const origin = (
+  (useRuntimeConfig().public.siteUrl as string) || requestUrl.origin
+).replace(/\/$/, '')
+
+useSeo({
+  // Just "About": the template appends the name, and "About Agastya Daratla |
+  // Agastya Daratla" says it twice.
   title: 'About',
-  meta: [
-    {
-      name: 'description',
-      content:
-        'Agastya Daratla. Documenting computer science and electronics projects, including the reasoning, the mistakes, and the fixes.',
-    },
-  ],
+  description: `Who ${siteConfig.name} is and how each project write-up is structured: the goal, the decisions and their rejected alternatives, what went wrong, and the fix.`,
+  jsonLd: {
+    '@context': 'https://schema.org',
+    '@graph': [
+      personSchema(origin),
+      {
+        '@type': 'AboutPage',
+        '@id': `${origin}/about#page`,
+        url: `${origin}/about`,
+        name: `About ${siteConfig.name}`,
+        mainEntity: { '@id': `${origin}/#person` },
+        inLanguage: 'en',
+      },
+    ],
+  },
 })
 </script>
 

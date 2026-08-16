@@ -12,7 +12,37 @@ const {
   immediate: ready,
 })
 
-useHead({ title: 'Agastya Daratla' })
+const requestUrl = useRequestURL()
+const origin = (
+  (useRuntimeConfig().public.siteUrl as string) || requestUrl.origin
+).replace(/\/$/, '')
+
+useSeo({
+  title: siteConfig.name,
+  description: `${siteConfig.name} builds and documents computer science and electronics projects: the reasoning behind each decision, what broke, and how it was fixed.`,
+  jsonLd: {
+    '@context': 'https://schema.org',
+    '@graph': [
+      personSchema(origin),
+      {
+        '@type': 'WebSite',
+        '@id': `${origin}/#website`,
+        url: origin,
+        name: siteConfig.name,
+        publisher: { '@id': `${origin}/#person` },
+        inLanguage: 'en',
+      },
+      {
+        '@type': 'Blog',
+        '@id': `${origin}/#blog`,
+        url: origin,
+        name: siteConfig.name,
+        author: { '@id': `${origin}/#person` },
+        inLanguage: 'en',
+      },
+    ],
+  },
+})
 </script>
 
 <template>

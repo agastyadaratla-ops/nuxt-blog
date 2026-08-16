@@ -35,11 +35,12 @@ async function onSubmit() {
 }
 
 // Unlinked from the site, so keep it out of search results too. This is
-// obscurity, not security — the actual protection is Supabase auth plus the
+// obscurity, not security. The actual protection is Supabase auth plus the
 // RLS policies, which hold regardless of who finds this page.
-useHead({
+useSeo({
   title: 'Sign in',
-  meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+  description: 'Author sign in.',
+  noindex: true,
 })
 </script>
 

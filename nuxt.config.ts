@@ -22,6 +22,16 @@ export default defineNuxtConfig({
     redirect: false,
   },
 
+  runtimeConfig: {
+    public: {
+      // Pin canonical and Open Graph URLs to one host. Leave unset and they
+      // are derived from the incoming request, which is correct on localhost
+      // and on a .vercel.app URL. Set it once a custom domain is live so the
+      // two hosts cannot compete as duplicates.
+      siteUrl: '',
+    },
+  },
+
   app: {
     head: {
       htmlAttrs: { lang: 'en' },

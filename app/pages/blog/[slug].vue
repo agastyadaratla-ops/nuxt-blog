@@ -16,9 +16,38 @@ if (!post.value) {
   })
 }
 
-useHead({
-  title: post.value.title,
-  meta: [{ name: 'description', content: post.value.excerpt }],
+const requestUrl = useRequestURL()
+const origin = (
+  (useRuntimeConfig().public.siteUrl as string) || requestUrl.origin
+).replace(/\/$/, '')
+
+const entry = post.value
+
+useSeo({
+  title: entry.title,
+  // Falling back to the title beats an empty description, which search
+  // engines replace with whatever text they scrape first.
+  description:
+    entry.excerpt ||
+    `${entry.title}. A project write-up by ${siteConfig.name}.`,
+  image: entry.cover_url,
+  type: 'article',
+  publishedAt: entry.created_at,
+  modifiedAt: entry.updated_at,
+  jsonLd: {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': `${origin}/blog/${entry.slug}#post`,
+    headline: entry.title,
+    description: entry.excerpt || entry.title,
+    datePublished: entry.created_at,
+    dateModified: entry.updated_at,
+    author: personSchema(origin),
+    publisher: { '@id': `${origin}/#person` },
+    mainEntityOfPage: `${origin}/blog/${entry.slug}`,
+    ...(entry.cover_url ? { image: entry.cover_url } : {}),
+    inLanguage: 'en',
+  },
 })
 </script>
 
