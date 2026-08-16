@@ -85,7 +85,8 @@ body {
 }
 
 .prose-post blockquote {
-  border-left: 3px solid var(--color-accent);
+  /* Rule matches the quote's own text colour so the two read as one unit. */
+  border-left: 2px solid var(--color-muted);
   padding-left: 1rem;
   font-style: italic;
   color: var(--color-muted);
