@@ -1,79 +1,106 @@
 <script setup lang="ts">
 /**
- * TEMPORARY. Paired with supabase/diagnose-rls.sql.
+ * TEMPORARY. Delete once the insert-policy problem is understood.
  *
- * Compares what the app believes about the signed-in user against what
- * Postgres actually sees on the same request, then attempts the exact insert
- * that is failing. Delete this component and the SQL function once the
- * insert-policy problem is understood.
+ * Runs the failing insert two ways — through the app's Supabase client, and
+ * through a hand-built fetch carrying the access token explicitly. Comparing
+ * the two says whether the token is being rejected or simply never attached,
+ * without needing anything installed in the database.
  */
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const config = useRuntimeConfig().public.supabase
 
 const output = ref('')
 const running = ref(false)
+
+function row(tag: string) {
+  return {
+    title: `RLS diagnostic ${tag}`,
+    slug: `rls-diagnostic-${tag}-${Date.now()}`,
+    excerpt: '',
+    content: '',
+    cover_url: null,
+    published: false,
+    author_id: user.value?.id ?? '',
+  }
+}
 
 async function run() {
   running.value = true
   const lines: string[] = []
 
   try {
-    // --- what the browser thinks -------------------------------------------
     const { data: sessionData } = await supabase.auth.getSession()
     const session = sessionData.session
 
-    lines.push(`app user.id     : ${user.value?.id ?? '(null)'}`)
-    lines.push(`session present : ${session ? 'yes' : 'NO'}`)
+    lines.push(`app user.id      : ${user.value?.id ?? '(null)'}`)
+    lines.push(`session present  : ${session ? 'yes' : 'NO'}`)
 
-    if (session) {
-      const expiresAt = session.expires_at ?? 0
-      lines.push(`token expired   : ${expiresAt * 1000 < Date.now() ? 'YES' : 'no'}`)
-
-      // Read the claims without verifying — we only want the role and subject.
-      const [, payload] = session.access_token.split('.')
-      if (payload) {
-        const claims = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
-        lines.push(`jwt sub         : ${claims.sub}`)
-        lines.push(`jwt role        : ${claims.role}`)
-      }
+    if (!session) {
+      lines.push('')
+      lines.push('No session in the browser — that alone explains the rejection.')
+      output.value = lines.join('\n')
+      return
     }
 
-    // --- what Postgres thinks, on the very same client ----------------------
-    const { data: who, error: whoError } = await supabase.rpc('whoami')
+    const expiresAt = (session.expires_at ?? 0) * 1000
+    lines.push(`token expired    : ${expiresAt < Date.now() ? 'YES' : 'no'}`)
 
-    if (whoError) {
-      lines.push(`whoami() error  : ${whoError.message}`)
-      lines.push('(did you run supabase/diagnose-rls.sql yet?)')
-    } else {
-      lines.push(`db auth.uid()   : ${who?.uid ?? '(null)'}`)
-      lines.push(`db auth.role()  : ${who?.role ?? '(null)'}`)
+    // Decode the claims locally (no verification — we only want role and sub).
+    const [, payload] = session.access_token.split('.')
+    if (payload) {
+      const claims = JSON.parse(
+        atob(payload.replace(/-/g, '+').replace(/_/g, '/')),
+      )
+      lines.push(`jwt sub          : ${claims.sub}`)
+      lines.push(`jwt role         : ${claims.role}`)
       lines.push(
-        `uid matches app : ${who?.uid && who.uid === user.value?.id ? 'YES' : 'NO'}`,
+        `sub matches app  : ${claims.sub === user.value?.id ? 'YES' : 'NO'}`,
       )
     }
 
-    // --- the operation that actually fails ----------------------------------
-    const { error: insertError } = await supabase.from('posts').insert({
-      title: 'RLS diagnostic',
-      slug: `rls-diagnostic-${Date.now()}`,
-      excerpt: '',
-      content: '',
-      cover_url: null,
-      published: false,
-      author_id: user.value?.id ?? '',
-    })
-
+    // Does the auth server still accept this token?
+    const { data: verified, error: verifyError } = await supabase.auth.getUser()
     lines.push(
-      insertError
-        ? `insert          : FAILED ${insertError.code} — ${insertError.message}`
-        : 'insert          : SUCCEEDED (delete the "RLS diagnostic" draft)',
+      verifyError
+        ? `token accepted   : NO — ${verifyError.message}`
+        : `token accepted   : yes (${verified.user?.id})`,
+    )
+
+    lines.push('')
+
+    // --- A: the real code path ---------------------------------------------
+    const { error: clientError } = await supabase.from('posts').insert(row('a'))
+    lines.push(
+      clientError
+        ? `A supabase-js    : FAILED ${clientError.code} — ${clientError.message}`
+        : 'A supabase-js    : SUCCEEDED',
+    )
+
+    // --- B: same insert, token attached by hand ----------------------------
+    const response = await fetch(`${config.url}/rest/v1/posts`, {
+      method: 'POST',
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(row('b')),
+    })
+    const responseBody = await response.text()
+    lines.push(
+      response.ok
+        ? 'B manual fetch   : SUCCEEDED'
+        : `B manual fetch   : FAILED ${response.status} — ${responseBody}`,
     )
   } catch (error) {
     lines.push(`threw: ${(error as Error).message}`)
+  } finally {
+    output.value = lines.join('\n')
+    running.value = false
   }
-
-  output.value = lines.join('\n')
-  running.value = false
 }
 </script>
 
@@ -83,7 +110,7 @@ async function run() {
       <div>
         <h2 class="font-medium">RLS diagnostic</h2>
         <p class="mt-0.5 text-sm text-muted">
-          Temporary. Run supabase/diagnose-rls.sql first.
+          Temporary — nothing to install, just press Run.
         </p>
       </div>
       <button
