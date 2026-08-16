@@ -36,17 +36,38 @@ useSeo({
   modifiedAt: entry.updated_at,
   jsonLd: {
     '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    '@id': `${origin}/blog/${entry.slug}#post`,
-    headline: entry.title,
-    description: entry.excerpt || entry.title,
-    datePublished: entry.created_at,
-    dateModified: entry.updated_at,
-    author: personSchema(origin),
-    publisher: { '@id': `${origin}/#person` },
-    mainEntityOfPage: `${origin}/blog/${entry.slug}`,
-    ...(entry.cover_url ? { image: entry.cover_url } : {}),
-    inLanguage: 'en',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: siteConfig.name,
+            item: origin,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: entry.title,
+            item: `${origin}/blog/${entry.slug}`,
+          },
+        ],
+      },
+      {
+        '@type': 'BlogPosting',
+        '@id': `${origin}/blog/${entry.slug}#post`,
+        headline: entry.title,
+        description: entry.excerpt || entry.title,
+        datePublished: entry.created_at,
+        dateModified: entry.updated_at,
+        author: personSchema(origin),
+        publisher: { '@id': `${origin}/#person` },
+        mainEntityOfPage: `${origin}/blog/${entry.slug}`,
+        ...(entry.cover_url ? { image: entry.cover_url } : {}),
+        inLanguage: 'en',
+      },
+    ],
   },
 })
 </script>
@@ -79,11 +100,27 @@ useSeo({
     />
 
     <div class="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12">
-      <!-- Publication date parked in the margin, newspaper-fashion. -->
+      <!-- Byline and date parked in the margin, newspaper-fashion. The byline
+           is a real link to /about, which both puts the author's name as
+           visible text on every post and connects each post back to the
+           profile page describing the person. -->
       <div class="md:col-span-3">
-        <time :datetime="post.created_at" class="label md:sticky md:top-10">
-          {{ formatDate(post.created_at) }}
-        </time>
+        <div class="md:sticky md:top-10">
+          <p class="label">
+            By
+            <NuxtLink
+              to="/about"
+              rel="author"
+              class="text-accent transition-colors hover:text-ink"
+            >
+              {{ siteConfig.name }}
+            </NuxtLink>
+          </p>
+
+          <time :datetime="post.created_at" class="label mt-2 block">
+            {{ formatDate(post.created_at) }}
+          </time>
+        </div>
       </div>
 
       <!--

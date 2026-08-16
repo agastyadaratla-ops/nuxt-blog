@@ -30,7 +30,9 @@ useSeo({
     '@graph': [
       personSchema(origin),
       {
-        '@type': 'AboutPage',
+        // ProfilePage rather than AboutPage: this page is *about a person*,
+        // which is exactly the distinction a name query needs Google to make.
+        '@type': 'ProfilePage',
         '@id': `${origin}/about#page`,
         url: `${origin}/about`,
         name: `About ${siteConfig.name}`,

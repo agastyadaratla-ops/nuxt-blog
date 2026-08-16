@@ -6,6 +6,14 @@ useHead({
     title && title !== siteConfig.name
       ? `${title} | ${siteConfig.name}`
       : siteConfig.name,
+  link: [
+    {
+      rel: 'alternate',
+      type: 'application/rss+xml',
+      title: siteConfig.name,
+      href: '/rss.xml',
+    },
+  ],
 })
 </script>
 
