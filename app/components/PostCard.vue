@@ -16,12 +16,11 @@ defineProps<{ post: Post }>()
 
     <div class="md:col-span-9">
       <NuxtLink :to="`/blog/${post.slug}`" class="group block">
-        <img
+        <ParallaxCover
           v-if="post.cover_url"
           :src="post.cover_url"
-          alt=""
-          class="mb-6 aspect-[16/9] w-full object-cover"
-          loading="lazy"
+          ratio="16 / 9"
+          class="mb-6 w-full"
         />
 
         <h2

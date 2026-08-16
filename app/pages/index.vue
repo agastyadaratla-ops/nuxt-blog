@@ -17,16 +17,24 @@ useHead({ title: 'The Blog' })
 
 <template>
   <div>
-    <header class="mb-14 grid gap-x-6 gap-y-4 md:grid-cols-12">
-      <p class="label md:col-span-3 md:pt-3">Writing</p>
+    <HeroScene mark="01" class="mb-14 py-6">
+      <header class="grid gap-x-6 gap-y-4 md:grid-cols-12">
+        <p class="label md:col-span-3 md:pt-3">Writing</p>
 
-      <div class="md:col-span-9">
-        <h1 class="display text-5xl sm:text-6xl">The Blog</h1>
-        <p class="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
-          Notes on whatever I'm building at the moment.
-        </p>
-      </div>
-    </header>
+        <div class="md:col-span-9">
+          <RevealText
+            text="The Blog"
+            as="h1"
+            class="display text-5xl sm:text-6xl"
+          />
+          <ScrollReveal :delay="0.25">
+            <p class="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
+              Notes on whatever I'm building at the moment.
+            </p>
+          </ScrollReveal>
+        </div>
+      </header>
+    </HeroScene>
 
     <SetupNotice v-if="!ready" />
 
@@ -55,7 +63,9 @@ useHead({ title: 'The Blog' })
     </div>
 
     <div v-else class="border-b border-line">
-      <PostCard v-for="post in posts" :key="post.id" :post="post" />
+      <ScrollReveal v-for="post in posts" :key="post.id">
+        <PostCard :post="post" />
+      </ScrollReveal>
     </div>
   </div>
 </template>

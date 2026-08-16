@@ -29,22 +29,24 @@ useHead({
     </NuxtLink>
 
     <header class="mt-8 border-b border-line pb-10">
-      <h1 class="display max-w-[18ch] text-4xl sm:text-5xl md:text-6xl">
-        {{ post.title }}
-      </h1>
-      <p
-        v-if="post.excerpt"
-        class="mt-5 max-w-[56ch] text-lg leading-relaxed text-ink-soft"
-      >
-        {{ post.excerpt }}
-      </p>
+      <RevealText
+        :text="post.title"
+        as="h1"
+        class="display max-w-[18ch] text-4xl sm:text-5xl md:text-6xl"
+      />
+      <ScrollReveal v-if="post.excerpt" :delay="0.2">
+        <p class="mt-5 max-w-[56ch] text-lg leading-relaxed text-ink-soft">
+          {{ post.excerpt }}
+        </p>
+      </ScrollReveal>
     </header>
 
-    <img
+    <ParallaxCover
       v-if="post.cover_url"
       :src="post.cover_url"
-      alt=""
-      class="my-12 aspect-[2/1] w-full object-cover"
+      ratio="2 / 1"
+      eager
+      class="my-12 w-full"
     />
 
     <div class="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12">

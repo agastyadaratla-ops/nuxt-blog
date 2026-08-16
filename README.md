@@ -121,6 +121,30 @@ Two rules worth keeping if you change colours:
 Fonts are downloaded at build time by `@nuxt/fonts` and served from your own
 origin, so no request reaches Google and there's no swap-in layout shift.
 
+## Motion
+
+Cinematic shell, calm articles. The homepage masthead and post headers get
+depth layers, parallax and masked reveals; the article body deliberately gets
+none, because scroll choreography makes long-form reading a fight.
+
+`app/composables/useScrollMotion.ts` is the gate. It loads GSAP only in a
+browser that wants motion, so the library never enters the server bundle and
+never ships to a reader who won't see it.
+
+Three rules the components follow, all of which are easy to break by accident:
+
+- **Reveals render finished.** JavaScript applies the *start* state before
+  animating. A reader with JS disabled, or `prefers-reduced-motion` set, gets
+  the text — never a blank page waiting on an animation that will not run.
+- **Word spacing is a real text node**, not a CSS margin. A margin looks
+  identical but leaves the accessible name and any copied text as
+  `TheBlog`.
+- **Parallax is skipped on coarse pointers.** It fights the browser's own
+  scroll compositing on touch devices.
+
+Depth levels follow `data-depth="0".."5"`, parallaxed by the factors in
+`DEPTH_FACTOR`. Decorative layers are `aria-hidden`.
+
 ## Commands
 
 | Command | What it does |

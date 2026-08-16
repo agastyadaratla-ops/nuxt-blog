@@ -285,6 +285,93 @@
   }
 
   /* -------------------------------------------------------------------------
+     Depth system — 6 layers, parallaxed at different rates.
+
+     Decorative layers are inset negatively so the parallax translate never
+     drags an edge into view. Content sits in normal flow at depth 4, so the
+     section still gets its height from the text rather than from a magic
+     number.
+
+     Every reveal below defaults to its FINISHED state. JavaScript sets the
+     start state before animating, which means no-JS and reduced-motion
+     readers get the text rather than an empty page.
+  ------------------------------------------------------------------------- */
+  .scene {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .scene__layer {
+    position: absolute;
+    inset: -15%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .scene__content {
+    position: relative;
+    z-index: 4;
+  }
+
+  .depth-0 {
+    filter: blur(8px);
+    opacity: 0.55;
+  }
+
+  .depth-1 {
+    filter: blur(30px);
+    opacity: 0.45;
+  }
+
+  .depth-2 {
+    opacity: 1;
+  }
+
+  .depth-5 {
+    z-index: 5;
+  }
+
+  /* Masked line reveal: the clipping box, and the line that slides inside it. */
+  .reveal-line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .reveal-line > span {
+    display: block;
+  }
+
+  /* Nothing is ever completely static — but 14s is a drift, not a bounce. */
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -16px, 0);
+    }
+  }
+
+  .float-loop {
+    animation: drift 14s ease-in-out infinite;
+  }
+
+  /* Parallaxing a cover image: the picture is oversized inside a fixed frame
+     so it can travel without exposing an edge. */
+  .parallax-frame {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .parallax-frame > img {
+    width: 100%;
+    height: 120%;
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+  }
+
+  /* -------------------------------------------------------------------------
      TipTap editing surface
   ------------------------------------------------------------------------- */
   .tiptap {
