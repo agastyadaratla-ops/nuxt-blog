@@ -1,0 +1,73 @@
+# Builds the GitHub Pages mirror.
+#
+# This is NOT the real site. Vercel is. The mirror exists because the school
+# network blocks *.vercel.app while github.io is reachable.
+#
+# It builds in SPA mode (PAGES_MIRROR=true), so posts are fetched in the
+# browser and are always current without a rebuild. It is marked noindex and
+# canonicals point at the Vercel site, so it cannot compete in search.
+
+name: Deploy Pages mirror
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race. Queue rather than cancel, so a push mid-deploy
+# still ends up published rather than silently dropped.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build the mirror
+        run: npx nuxt generate
+        env:
+          PAGES_MIRROR: 'true'
+          # Canonical URLs point at the real site, not at the mirror.
+          NUXT_PUBLIC_SITE_URL: https://agastyas-blog.vercel.app
+          # The publishable key is public by design: it is already visible in
+          # every page this site serves, and Row Level Security is what
+          # actually protects the data. Move these to repository variables if
+          # you would rather they were not in the workflow file.
+          SUPABASE_URL: https://kfvviehngubeobuyxeqy.supabase.co
+          SUPABASE_KEY: sb_publishable_Ynb8Kd1Ybbv_NswEpctSag_U9rfPbdC
+
+      - name: Keep the mirror out of search results
+        # Belt and braces alongside the noindex meta tag. The real robots.txt
+        # is a server route that only exists on Vercel, so without this the
+        # mirror would ship no robots file at all.
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > .output/public/robots.txt
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,6 @@
+GitHub Pages runs Jekyll by default, and Jekyll ignores directories whose
+names begin with an underscore. Nuxt emits its assets into _nuxt/ and _fonts/,
+so without this file every stylesheet, script and font would 404 and the site
+would render as unstyled text.
+
+The file only has to exist. Its contents are never read.

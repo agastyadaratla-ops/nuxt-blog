@@ -26,10 +26,16 @@ export interface SeoOptions {
 export function useSeo(options: SeoOptions) {
   const route = useRoute()
   const requestUrl = useRequestURL()
-  const configured = useRuntimeConfig().public.siteUrl as string
+  const config = useRuntimeConfig().public
+  const configured = config.siteUrl as string
 
   const origin = (configured || requestUrl.origin).replace(/\/$/, '')
   const canonical = `${origin}${route.path}`
+
+  // The GitHub Pages mirror must never be indexed. It is a reachability
+  // workaround for one blocked network, and letting it into search results
+  // would put a slower, canonical-less copy in front of readers.
+  const noindex = options.noindex || Boolean(config.isMirror)
 
   const image = options.image
     ? options.image.startsWith('http')
@@ -44,7 +50,7 @@ export function useSeo(options: SeoOptions) {
       { name: 'description', content: options.description },
       {
         name: 'robots',
-        content: options.noindex ? 'noindex, nofollow' : 'index, follow',
+        content: noindex ? 'noindex, nofollow' : 'index, follow',
       },
       { property: 'og:type', content: options.type ?? 'website' },
       { property: 'og:title', content: options.title },
